@@ -573,9 +573,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 7. Complete Sale Button
   async function waitForPesapalPayment(order, saleItems, total) {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const statusHeaders = sessionData?.session?.access_token
+      ? { Authorization: `Bearer ${sessionData.session.access_token}` }
+      : {};
+
     for (let attempt = 0; attempt < 60; attempt += 1) {
       await new Promise(resolve => setTimeout(resolve, 3000));
-      const response = await fetch(`${paymentApiBase}/api/orders/${encodeURIComponent(order.id)}/status`);
+      const response = await fetch(`${paymentApiBase}/api/orders/${encodeURIComponent(order.id)}/status`, {
+        headers: statusHeaders
+      });
       if (!response.ok) continue;
 
       const currentOrder = await response.json();

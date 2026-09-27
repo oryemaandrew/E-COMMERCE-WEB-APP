@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
 dotenv.config();
@@ -56,6 +57,91 @@ const CASHIER_AUTH_LIMIT = 8;
 function isValidUuid(value) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
 }
+
+function createOrderStatusToken(orderId) {
+  return createHmac('sha256', process.env.SUPABASE_SERVICE_ROLE_KEY)
+    .update(`order-status:${orderId}`)
+    .digest('hex');
+}
+
+function isValidOrderStatusToken(orderId, token) {
+  if (!/^[a-f0-9]{64}$/i.test(String(token || ''))) return false;
+  const supplied = Buffer.from(token, 'hex');
+  const expected = Buffer.from(createOrderStatusToken(orderId), 'hex');
+  return supplied.length === expected.length && timingSafeEqual(supplied, expected);
+}
+
+app.post('/api/checkout', async (req, res) => {
+  const body = req.body || {};
+  const items = body.items;
+  const customerName = String(body.customerName || '').trim();
+  const phone = String(body.phone || '').trim();
+  const email = String(body.email || '').trim();
+
+  if (!Array.isArray(items) || items.length === 0 || items.length > 100) {
+    return res.status(400).json({ success: false, error: 'Add between 1 and 100 items to your cart.' });
+  }
+  if (!customerName || customerName.length > 120) {
+    return res.status(400).json({ success: false, error: 'Enter a valid customer name.' });
+  }
+  if (!/^[+\d][\d\s()+-]{6,24}$/.test(phone)) {
+    return res.status(400).json({ success: false, error: 'Enter a valid phone number.' });
+  }
+  if (email && (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
+    return res.status(400).json({ success: false, error: 'Enter a valid email address.' });
+  }
+
+  const normalizedItems = [];
+  for (const item of items) {
+    const productId = String(item?.productId || '');
+    const quantity = Number(item?.quantity);
+    if (!/^\d+$/.test(productId) || Number(productId) < 1 || !Number.isInteger(quantity) || quantity < 1 || quantity > 100) {
+      return res.status(400).json({ success: false, error: 'Cart contains an invalid product or quantity.' });
+    }
+    normalizedItems.push({ productId, quantity });
+  }
+
+  let customerId = null;
+  const authorization = String(req.headers.authorization || '');
+  if (authorization.startsWith('Bearer ')) {
+    const accessToken = authorization.slice('Bearer '.length).trim();
+    const { data: userData, error: userError } = await supabase.auth.getUser(accessToken);
+    if (userError || !userData.user) {
+      return res.status(401).json({ success: false, error: 'Your customer session is invalid or expired.' });
+    }
+    customerId = userData.user.id;
+  }
+
+  try {
+    const { data, error } = await supabase.rpc('create_reserved_order', {
+      p_items: normalizedItems,
+      p_customer_id: customerId,
+      p_customer_name: customerName,
+      p_customer_phone: phone,
+      p_payment_method: 'Pesapal',
+      p_shift_id: null,
+      p_cashier_id: null,
+      p_confirmed: false
+    });
+
+    if (error) throw error;
+    const order = Array.isArray(data) ? data[0] : data;
+    if (!order?.id) throw new Error('Order creation returned no order ID.');
+
+    return res.status(201).json({
+      success: true,
+      order: { id: order.id, total_amount: order.total_amount },
+      orderStatusToken: createOrderStatusToken(order.id)
+    });
+  } catch (error) {
+    console.error('Checkout order creation error:', error.message);
+    const isInventoryError = /insufficient stock|unavailable/i.test(error.message || '');
+    return res.status(isInventoryError ? 409 : 500).json({
+      success: false,
+      error: isInventoryError ? 'An item in your cart is no longer available in that quantity.' : 'Unable to create checkout order.'
+    });
+  }
+});
 
 app.post('/api/cashier/auth', async (req, res) => {
   const { openingFloat } = req.body || {};
@@ -287,7 +373,7 @@ async function registerIpnUrl() {
  * Initiates payment prompt via Pesapal v3
  */
 app.post('/api/payments/pesapal', async (req, res) => {
-  const { orderId, phoneNumber, email } = req.body;
+  const { orderId, phoneNumber, email, orderToken, source } = req.body;
 
   if (!orderId || !phoneNumber) {
     return res.status(400).json({ success: false, error: 'Missing required parameters: phoneNumber, orderId' });
@@ -296,12 +382,16 @@ app.post('/api/payments/pesapal', async (req, res) => {
   try {
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select('total_amount, status')
+      .select('id, total_amount, status')
       .eq('id', orderId)
       .single();
 
     if (orderError || !order) {
       return res.status(404).json({ success: false, error: 'Order not found' });
+    }
+
+    if (source === 'storefront' && !isValidOrderStatusToken(order.id, orderToken)) {
+      return res.status(403).json({ success: false, error: 'Checkout authorization is invalid or expired.' });
     }
 
     const amountToCharge = Number(order.total_amount);
@@ -406,9 +496,18 @@ app.get('/api/orders/:id/status', async (req, res) => {
   const { id } = req.params;
 
   try {
+    let authenticatedUser = null;
+    const authorization = String(req.headers.authorization || '');
+    if (!req.headers['x-order-status-token'] && authorization.startsWith('Bearer ')) {
+      const { data: userData, error: userError } = await supabase.auth.getUser(
+        authorization.slice('Bearer '.length).trim()
+      );
+      if (!userError) authenticatedUser = userData.user;
+    }
+
     let { data: order, error } = await supabase
       .from('orders')
-      .select('id, status, payment_method, total_amount, pesapal_tracking_id, payment_transactions(status)')
+      .select('id, customer_id, cashier_id, status, payment_method, total_amount, pesapal_tracking_id, payment_transactions(status)')
       .eq('id', id)
       .single();
 
@@ -416,12 +515,25 @@ app.get('/api/orders/:id/status', async (req, res) => {
       return res.status(404).json({ error: 'Order not found' });
     }
 
+    const statusToken = req.headers['x-order-status-token'];
+    if (statusToken) {
+      if (!isValidOrderStatusToken(order.id, statusToken)) {
+        return res.status(403).json({ error: 'Order status authorization is invalid or expired.' });
+      }
+    } else if (!authenticatedUser || (
+      authenticatedUser.id !== order.customer_id &&
+      authenticatedUser.id !== order.cashier_id &&
+      authenticatedUser.app_metadata?.role !== 'admin'
+    )) {
+      return res.status(403).json({ error: 'You are not authorized to view this order.' });
+    }
+
     if (order.status === 'pending' && order.pesapal_tracking_id) {
       try {
         await syncPesapalOrder(order.pesapal_tracking_id, '');
         const refreshed = await supabase
           .from('orders')
-          .select('id, status, payment_method, total_amount, pesapal_tracking_id, payment_transactions(status)')
+          .select('id, customer_id, cashier_id, status, payment_method, total_amount, pesapal_tracking_id, payment_transactions(status)')
           .eq('id', id)
           .single();
         order = refreshed.data || order;
