@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="VENDORA offers groceries, everyday essentials, apparel, and convenient delivery in one trusted online store.">
+  <title>VENDORA Market | Groceries and Everyday Essentials</title>
+  
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="preload" as="image" href="https://images.unsplash.com/photo-1542838132-92c53300491e?w=900&amp;auto=format&amp;fit=crop&amp;q=75" fetchpriority="high">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"></noscript>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://hxuzkwittfotrdyuvglv.supabase.co" crossorigin>
+</head>
+<body>
+  <div class="store-announcement">
+    <span>Free delivery on orders over UGX 150,000</span>
+    <span class="announcement-secondary">Secure checkout &middot; Easy returns</span>
+  </div>
+
+  <header class="site-header">
+    <nav class="nav-container">
+      <!-- Brand Logo -->
+      <a href="#home" class="logo" aria-label="VENDORA home">
+        <img src="image1-optimized.jpg" alt="VENDORA logo" class="brand-mark" width="60" height="60" fetchpriority="low" />
+        <span class="logo-wording">
+          <span class="logo-accent">VENDORA</span><span class="logo-dot">.</span>
+        </span>
+      </a>
+
+      <!-- Navigation Links -->
+      <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="primaryNavigation">
+        <span></span><span></span><span></span>
+      </button>
+
+      <ul id="primaryNavigation" class="nav-links">
+        <li><a href="#home" class="nav-link active">Home</a></li>
+        <li><a href="#products" class="nav-link">Shop</a></li>
+        <li><a href="#services" class="nav-link">Services</a></li>
+        <li><a href="#contact" class="nav-link">Contact</a></li>
+      </ul>
+
+      <!-- Quick Action Controls -->
+      <div class="nav-actions">
+        <a href="cashier.html" class="icon-pill-btn pos-btn-accent">
+          <span class="btn-text">POS Mode</span>
+        </a>
+
+        <button id="openAdminModalLink" class="icon-pill-btn" aria-label="Admin Login">
+          <span class="btn-text">Admin</span>
+        </button>
+
+        <button id="customerAuthBtn" class="icon-pill-btn" aria-label="Sign in to customer account">
+          <span class="btn-text">Sign in</span>
+        </button>
+
+        <button id="customerOrdersBtn" class="icon-pill-btn" aria-label="View your orders" hidden>
+          <span class="btn-text">Orders</span>
+          <span id="customerOrderBadge" class="cart-badge" hidden>0</span>
+        </button>
+
+        <button id="themeToggle" class="icon-pill-btn" aria-label="Toggle theme">
+          <span class="btn-text">Dark</span>
+        </button>
+
+        <button id="cartBtn" class="icon-pill-btn cart-btn-accent" aria-label="View Shopping Cart">
+          <span class="btn-text">Cart</span>
+          <span id="cartBadge" class="cart-badge">0</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Home Hero Section -->
+<section id="home" class="hero-container">
+  <div class="hero-content">
+    <span class="hero-tag">VENDORA MARKET <span aria-hidden="true">/</span> CURATED DAILY</span>
+    <h1 class="hero-title">The good stuff, <span class="gradient-text">all in one place.</span></h1>
+    <p class="hero-description">
+      Fresh groceries, everyday essentials, and style-led finds for the way you live now. Thoughtfully selected, fairly priced, and ready for delivery.
+    </p>
+
+    <div class="hero-actions">
+      <a href="#products" class="btn btn-primary">Explore Shop</a>
+      <a href="#services" class="btn btn-secondary">Our Services</a>
+    </div>
+    <!-- Store Highlights / Social Proof -->
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-number">10k+</span>
+        <span class="stat-label">Customers served</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number">100%</span>
+        <span class="stat-label">Quality checked</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number">24/7</span>
+        <span class="stat-label">Delivery support</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero Visual Card Showcase -->
+  <div class="hero-visual">
+    <div class="hero-card-glow"></div>
+    <div class="hero-badge">
+      <span class="badge-icon">01</span>
+      <div>
+        <strong>Fresh picks for every day</strong>
+        <p>Shop the latest VENDORA collection</p>
+      </div>
+    </div>
+    <div class="hero-product-stamp"><span>New</span><strong>Seasonal<br>favourites</strong></div>
+  </div>
+  
+</section>
+
+    <section class="retail-perks" aria-label="Store benefits">
+      <div class="retail-perk"><span class="perk-number">01</span><div><strong>Quality, always</strong><span>Products selected with care</span></div></div>
+      <div class="retail-perk"><span class="perk-number">02</span><div><strong>Easy delivery</strong><span>To your door, on your schedule</span></div></div>
+      <div class="retail-perk"><span class="perk-number">03</span><div><strong>Secure checkout</strong><span>Simple, trusted payments</span></div></div>
+    </section>
+
+    <section id="products">
+      <div class="section-heading-row">
+        <div>
+          <span class="section-kicker">Shop the collection</span>
+          <h2>Shop what is in season</h2>
+          <p class="section-intro">Everyday essentials and considered finds, ready to add to your basket.</p>
+        </div>
+        <span class="catalog-note">Freshly updated</span>
+      </div>
+      <div id="store-category-filters" class="category-rail" aria-label="Shop by category"></div>
+      <div class="catalog-toolbar">
+        <label class="search-box" for="searchInput">
+          <span aria-hidden="true">Search</span>
+          <input type="search" id="searchInput" placeholder="Search the collection...">
+        </label>
+        <span class="catalog-hint">Tap a product for details</span>
+      </div>
+      <div id="product-container" class="grid-3"></div>
+</section>
+
+   <!-- Services Section -->
+<section id="services">
+  <h2>Why Shop With Us</h2>
+  <div class="grid-3">
+    <!-- Existing Services -->
+    <div class="card card-body">
+      <h3>Fast Delivery</h3>
+      <p>Same-day dispatch and trackable doorstep delivery nationwide.</p>
+    </div>
+    <div class="card card-body">
+      <h3>Custom Fitting</h3>
+      <p>Personalized tailoring and sizing guarantees for all clothing lines.</p>
+    </div>
+    <div class="card card-body">
+      <h3>Easy Returns</h3>
+      <p>Hassle-free 30-day exchange policy on all unworn items.</p>
+    </div>
+
+    <div class="card card-body">
+      <h3>24/7 Support</h3>
+      <p>Get instant assistance anytime via live chat or WhatsApp.</p>
+    </div>
+    <div class="card card-body">
+      <h3>Secure Payment</h3>
+      <p>100% safe checkout with encrypted Mobile Money and Card options.</p>
+    </div>
+    <div class="card card-body">
+      <h3>Authentic Quality</h3>
+      <p>Guaranteed 100% genuine footwear and premium quality fabrics.</p>
+    </div>
+  </div>
+</section>
+
+  <!-- Contact & Support Hub -->
+<section id="contact" class="corporate-contact-section">
+  <div class="contact-header">
+    <span class="contact-tag">Customer care, made simple</span>
+    <h2>We are here to help you move forward.</h2>
+    <p class="contact-subtitle">
+      Reach the right VENDORA team for order support, styling advice, partnerships, or anything else you need.
+    </p>
+  </div>
+
+  <div class="contact-grid">
+    <div class="contact-info-panel">
+      <div class="system-status-card" aria-label="Support availability">
+        <span class="status-pulse" aria-hidden="true"></span>
+        <div>
+          <strong>Support is currently available</strong>
+          <p>Most messages receive a response within 15 minutes.</p>
+        </div>
+      </div>
+
+      <div class="dept-list">
+        <div class="dept-card">
+          <div class="dept-icon" aria-hidden="true">01</div>
+          <div class="dept-content">
+            <h3>Customer Concierge &amp; Orders</h3>
+            <p>Direct assistance for personal styling, sizing, and active order tracking.</p>
+            <a href="https://wa.me/256767205641" class="dept-link" target="_blank" rel="noopener">Chat on WhatsApp <span aria-hidden="true">&rarr;</span></a>
+          </div>
+        </div>
+
+        <div class="dept-card">
+          <div class="dept-icon" aria-hidden="true">02</div>
+          <div class="dept-content">
+            <h3>Wholesale &amp; Corporate Partnerships</h3>
+            <p>Bulk inquiries, retail distribution, and brand partnership opportunities.</p>
+            <a href="mailto:oryemaandrew@22gmail.com" class="dept-link">oryemaandrew@22gmail.com</a>
+          </div>
+        </div>
+
+        <div class="dept-card">
+          <div class="dept-icon" aria-hidden="true">03</div>
+          <div class="dept-content">
+            <h3>Mbarara Headquarters</h3>
+            <p>Mbarara, Uganda</p>
+            <span class="contact-time">Mon - Sat | 08:00 - 20:00 EAT</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="contact-form-panel">
+      <div class="form-heading">
+        <span class="form-eyebrow">Direct support</span>
+        <h3>Send a message</h3>
+        <p>Tell us what you need and the right team will get back to you.</p>
+      </div>
+
+<form id="corporateContactForm" class="enterprise-form" action="https://formspree.io/f/xbgjojgr" method="POST">
+  
+  <div class="form-row">
+    <div class="form-group">
+      <label for="fullName">Full Name</label>
+      <input type="text" id="fullName" name="name" placeholder="e.g. Oryema Andrew" required />
+    </div>
+    <div class="form-group">
+      <label for="contactEmail">Email Address</label>
+      <input type="email" id="contactEmail" name="email" placeholder="andrew@domain.com" required />
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="deptSelect">How can we help?</label>
+    <select id="deptSelect" name="department" required>
+      <option value="" disabled selected>Select the relevant department</option>
+      <option value="Customer Service & Order Status">Customer Service &amp; Order Status</option>
+      <option value="Wholesale & B2B Inquiries">Wholesale &amp; B2B Inquiries</option>
+      <option value="Press & Media Relations">Press &amp; Media Relations</option>
+      <option value="Returns & Exchanges">Returns &amp; Exchanges</option>
+    </select>
+  </div>
+
+  <div class="form-group message-group">
+    <label for="contactMessage">Your Message</label>
+    <textarea id="contactMessage" name="message" rows="6" placeholder="How can our team assist you today?" required></textarea>
+    <span class="field-note">Please include an order number when asking about an existing purchase.</span>
+  </div>
+
+  <button type="submit" id="formSubmitBtn" class="btn btn-primary btn-block">
+    Send Priority Message
+  </button>
+
+  <div id="formStatus" class="form-status" role="status" aria-live="polite"></div>
+</form>
+
+<!-- Inline JavaScript Handler (No Imports Required) -->
+<script>
+  (function() {
+    const contactForm = document.getElementById('corporateContactForm');
+    const submitBtn = document.getElementById('formSubmitBtn');
+    const statusDiv = document.getElementById('formStatus');
+
+    if (contactForm) {
+      contactForm.addEventListener('submit', async function(e) {
+        e.preventDefault(); // STOPS PAGE REFRESH
+
+        // Update Button State
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Sending Message... ⏳';
+        
+        statusDiv.style.display = 'none';
+
+        try {
+          const response = await fetch(contactForm.action, {
+            method: 'POST',
+            body: new FormData(contactForm),
+            headers: { 'Accept': 'application/json' }
+          });
+
+          if (response.ok) {
+            statusDiv.style.display = 'block';
+            statusDiv.style.background = 'rgba(16, 185, 129, 0.15)';
+            statusDiv.style.color = '#10b981';
+            statusDiv.style.border = '1px solid #10b981';
+            statusDiv.innerHTML = 'Thank you! Your message has been received.';
+            contactForm.reset();
+          } else {
+            throw new Error('Form submission failed');
+          }
+        } catch (error) {
+          statusDiv.style.display = 'block';
+          statusDiv.style.background = 'rgba(239, 68, 68, 0.15)';
+          statusDiv.style.color = '#ef4444';
+          statusDiv.style.border = '1px solid #ef4444';
+          statusDiv.innerHTML = 'Something went wrong. Please check your network and try again.';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnText;
+        }
+      });
+    }
+  })();
+</script>
+    </div>
+  </div>
+</section>
+
+<!-- ADMIN AUTHENTICATION MODAL -->
+<div id="adminAuthModal" class="auth-modal-overlay" style="display: none;">
+  <div class="auth-modal-card">
+    <div class="auth-modal-header">
+      <h3>Admin Portal Login</h3>
+      <button id="closeAuthModalBtn" class="close-btn">&times;</button>
+    </div>
+    
+    <form id="adminLoginForm" autocomplete="off">
+      <div class="form-group">
+        <label for="adminEmail">Email Address</label>
+        <input type="email" id="adminEmail" name="staff-login-identifier" placeholder="admin@domain.com" required autocomplete="off" />
+      </div>
+      
+      <div class="form-group">
+        <label for="adminPassword">Password</label>
+        <div class="password-field">
+          <input type="password" id="adminPassword" name="staff-login-secret" placeholder="Enter your password" required autocomplete="off" />
+          <button type="button" class="password-toggle" data-password-target="adminPassword" aria-label="Show password" aria-pressed="false">
+            <svg class="password-icon password-icon-show" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.1 12s3.4-6 9.9-6 9.9 6 9.9 6-3.4 6-9.9 6-9.9-6-9.9-6Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>
+            <svg class="password-icon password-icon-hide" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18M10.6 6.2A10.7 10.7 0 0 1 12 6c6.5 0 9.9 6 9.9 6a17.6 17.6 0 0 1-3.1 3.7M6.2 6.2C3.5 8.1 2.1 12 2.1 12s3.4 6 9.9 6c1.5 0 2.8-.3 4-.8M9.9 9.9a3 3 0 0 0 4.2 4.2"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+      <div id="authStatus" style="margin-top: 0.75rem; font-size: 0.9rem; text-align: center;"></div>
+    </form>
+  </div>
+</div>
+
+<!-- CUSTOMER ACCOUNT MODAL -->
+<div id="customerAuthModal" class="auth-modal-overlay customer-auth-modal" hidden>
+  <div class="auth-modal-card customer-auth-card" role="dialog" aria-modal="true" aria-labelledby="customerAuthTitle">
+    <div class="auth-modal-header">
+      <div>
+        <div class="customer-auth-brand" aria-label="VENDORA">
+          <img class="customer-auth-brand-mark" src="image1-optimized.jpg" alt="" aria-hidden="true" width="48" height="48" />
+          <span>VENDORA</span>
+        </div>
+        <h3 id="customerAuthTitle">Sign in to shop faster</h3>
+      </div>
+      <button id="closeCustomerAuthBtn" class="close-btn" type="button" aria-label="Close customer sign in">&times;</button>
+    </div>
+    <p id="customerAuthIntro" class="auth-modal-intro">Shop faster with your VENDORA account.</p>
+    <form id="customerAuthForm" autocomplete="off">
+      <div id="customerAuthNameField" class="form-group" hidden>
+        <label for="customerAuthName">Full name</label>
+        <input type="text" id="customerAuthName" autocomplete="name" />
+      </div>
+      <div class="form-group">
+        <label for="customerAuthEmail">Email address</label>
+        <input type="email" id="customerAuthEmail" name="customer-email" autocomplete="email" placeholder="you@example.com" required />
+      </div>
+      <div class="form-group">
+        <label for="customerAuthPassword">Password</label>
+        <div class="password-field">
+          <input type="password" id="customerAuthPassword" name="customer-password" minlength="6" placeholder="At least 6 characters" autocomplete="new-password" required />
+          <button type="button" class="password-toggle" data-password-target="customerAuthPassword" aria-label="Show password" aria-pressed="false">
+            <svg class="password-icon password-icon-show" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.1 12s3.4-6 9.9-6 9.9 6 9.9 6-3.4 6-9.9 6-9.9-6-9.9-6Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>
+            <svg class="password-icon password-icon-hide" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18M10.6 6.2A10.7 10.7 0 0 1 12 6c6.5 0 9.9 6 9.9 6a17.6 17.6 0 0 1-3.1 3.7M6.2 6.2C3.5 8.1 2.1 12 2.1 12s3.4 6 9.9 6c1.5 0 2.8-.3 4-.8M9.9 9.9a3 3 0 0 0 4.2 4.2"></path></svg>
+          </button>
+        </div>
+      </div>
+      <button id="customerAuthSubmit" class="btn btn-primary btn-block" type="submit">Sign in</button>
+      <button id="customerAuthSwitch" class="auth-switch-btn" type="button">New here? Create an account</button>
+      <p id="customerAuthStatus" class="form-status" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</div>
+  </main>
+
+  <section id="customerOrdersPanel" class="customer-orders-panel" hidden aria-labelledby="customerOrdersTitle">
+    <div class="customer-orders-header">
+      <div>
+        <span class="section-kicker">Your account</span>
+        <h2 id="customerOrdersTitle">Order history</h2>
+        <p>Track your purchases and see the latest payment or fulfilment status.</p>
+      </div>
+      <div class="customer-orders-actions">
+        <button id="refreshCustomerOrdersBtn" class="btn btn-secondary" type="button">Refresh orders</button>
+        <button id="closeCustomerOrdersBtn" class="btn btn-secondary" type="button">Close history</button>
+      </div>
+    </div>
+    <p id="customerOrdersStatus" class="form-status" role="status" aria-live="polite"></p>
+    <div id="customerOrdersList" class="customer-orders-list" aria-live="polite">
+      <p class="customer-orders-empty">Sign in to view your order history.</p>
+    </div>
+  </section>
+
+  <section class="customer-request-panel" style="max-width: 1100px; margin: 2rem auto; padding: 0 1rem;">
+    <div class="customer-request-heading">
+      <span class="section-kicker">Need assistance?</span>
+      <h2>Contact Cashier</h2>
+      <p>Send a request directly to our cashier team.</p>
+    </div>
+    <div class="card card-body" style="padding: 1.5rem; border-radius: 18px;">
+      <h3 style="margin-bottom: 0.75rem;">Request an order online</h3>
+      <p style="margin-bottom: 1rem; color: var(--text-muted);">Send your item request here and it will go directly to the cashier queue for handling.</p>
+
+      <form id="customerOrderRequestForm" class="enterprise-form" style="display: grid; gap: 1rem;">
+        <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+          <div class="form-group">
+            <label for="customerName">Full Name</label>
+            <input type="text" id="customerName" name="customerName" placeholder="e.g. Oryema Andrew" required />
+          </div>
+          <div class="form-group">
+            <label for="customerPhone">Phone / WhatsApp</label>
+            <input type="tel" id="customerPhone" name="customerPhone" placeholder="e.g. +256 700 000000" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="customerOrderItem">Requested Item</label>
+          <input type="text" id="customerOrderItem" name="customerOrderItem" placeholder="e.g. Nike Air Max size 40" required />
+        </div>
+
+        <div class="form-group">
+          <label for="customerOrderNotes">Order Notes</label>
+          <textarea id="customerOrderNotes" name="customerOrderNotes" rows="4" placeholder="Add size, color, delivery details, or any special requirements"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Send Order Request to Cashier</button>
+        <div id="customerRequestStatus" class="form-status" role="status" aria-live="polite" style="display: none;"></div>
+      </form>
+    </div>
+  </section>
+
+   <div id="cartOverlay" class="cart-overlay"></div>
+<aside id="cartDrawer" class="cart-drawer" aria-label="Shopping Cart">
+  <div class="cart-header">
+    <h3>Your Shopping Cart</h3>
+    <button id="closeCartBtn" class="close-btn" aria-label="Close cart">&times;</button>
+  </div>
+  <div id="cartItems" class="cart-body"></div>
+  <div class="cart-footer">
+    <div class="cart-total-row">
+      <span>Total:</span>
+      <span id="cartTotal">UGX 0</span>
+    </div>
+    <button id="checkoutBtn" class="btn btn-primary" type="button" style="width: 100%;">Proceed to payment</button>
+    <button id="backToDashboardBtn" class="btn btn-secondary" type="button" style="width: 100%;">Return to dashboard</button>
+    <p id="cartStatus" class="form-status" role="status" aria-live="polite" hidden></p>
+    <p class="cart-payment-hint">Secure checkout powered by Pesapal.</p>
+  </div>
+</aside>
+
+<div id="checkoutOverlay" class="checkout-overlay" hidden>
+  <section class="checkout-dialog" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+    <div class="checkout-header">
+      <div>
+
+        <span class="section-kicker">Pesapal payment</span>
+        <h2 id="checkoutTitle">Authorize your order</h2>
+      </div>
+      <button id="closeCheckoutBtn" class="close-btn" type="button" aria-label="Close payment form">&times;</button>
+    </div>
+    <p class="checkout-summary">Your cart total is <strong id="checkoutTotal">UGX 0</strong>.</p>
+    <form id="checkoutForm" class="checkout-form">
+      <div class="form-group">
+        <label for="checkoutName">Customer name</label>
+        <input id="checkoutName" name="customerName" type="text" autocomplete="name" required />
+      </div>
+      <div class="form-group">
+        <label for="checkoutPhone">Phone number</label>
+        <input id="checkoutPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="07XXXXXXXX or 2567XXXXXXXX" required />
+        <small>Use the Uganda number that should receive the payment prompt.</small>
+      </div>
+      <div class="form-group">
+        <label for="checkoutEmail">Email address</label>
+        <input id="checkoutEmail" name="email" type="email" autocomplete="email" placeholder="you@example.com" />
+      </div>
+      <p class="checkout-provider-note">You will be redirected to Pesapal to choose an available payment method.</p>
+      <p id="checkoutStatus" class="form-status" role="status" aria-live="polite" hidden></p>
+      <button id="authorizePaymentBtn" class="btn btn-primary btn-block" type="submit">Continue to Pesapal</button>
+    </form>
+  </section>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-content">
+    <p>&copy; 2026 VENDORA Corporate. All Rights Reserved.</p>
+   
+  </div>
+</footer>
+
+<script type="module" src="scripts/main.js"></script>
+<!-- MUST have type="module" -->
+
+</body>
+</html>

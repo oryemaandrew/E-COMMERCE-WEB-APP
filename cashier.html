@@ -1,0 +1,334 @@
+<!-- ==========================================
+   MULTI-CASHIER POS TERMINAL SCREEN
+   ========================================== -->
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VENDORA Operations | Cashier</title>
+   <link rel="stylesheet" href="styles/main.css">
+   <!-- Supabase JS Client CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  </head>
+  <body class="cashier-body">
+
+    <main>
+
+<div id="pos-terminal-app">
+
+  <!-- 1. CASHIER PIN LOGIN & SHIFT START MODAL -->
+  <div id="cashier-auth-overlay" class="auth-modal-overlay">
+    <div class="auth-modal-card cashier-auth-card">
+      <div class="auth-header">
+        <button type="button" id="closeCashierAuthBtn" class="close-btn cashier-auth-close" aria-label="Close cashier sign in">&times;</button>
+        <span class="auth-kicker">VENDORA / REGISTER 01</span>
+        <span class="auth-icon" aria-hidden="true">POS</span>
+        <h2>Open your register</h2>
+        <p class="auth-subtitle">Sign in to begin your shift and serve customers.</p>
+      </div>
+
+      <form id="cashier-login-form" autocomplete="off">
+        <div class="form-group">
+          <label for="cashier-email">Cashier email</label>
+          <input
+            type="email"
+            id="cashier-email"
+            name="email"
+            placeholder="cashier@vendora.com"
+            autocomplete="email"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="cashier-password">Password</label>
+          <div class="password-field">
+            <input
+              type="password"
+              id="cashier-password"
+              name="password"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              required
+            />
+            <button type="button" class="password-toggle" data-password-target="cashier-password" aria-label="Show password" aria-pressed="false">
+              <svg class="password-icon password-icon-show" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.1 12s3.4-6 9.9-6 9.9 6 9.9 6-3.4 6-9.9 6-9.9-6-9.9-6Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>
+              <svg class="password-icon password-icon-hide" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18M10.6 6.2A10.7 10.7 0 0 1 12 6c6.5 0 9.9 6 9.9 6a17.6 17.6 0 0 1-3.1 3.7M6.2 6.2C3.5 8.1 2.1 12 2.1 12s3.4 6 9.9 6c1.5 0 2.8-.3 4-.8M9.9 9.9a3 3 0 0 0 4.2 4.2"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="starting-float">Opening Cash Float (UGX)</label>
+          <input 
+            type="number" 
+            id="starting-float" 
+            placeholder="e.g. 100000" 
+            min="0" 
+            required 
+          />
+        </div>
+
+        <button type="submit" class="btn-primary auth-submit-btn">
+          Start Shift & Open Register
+        </button>
+        <p class="auth-security-note">Secure staff access &middot; Your shift activity is recorded</p>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. MAIN POS WORKSPACE (Hidden until authenticated) -->
+  <div id="pos-interface" class="pos-container hidden">
+    
+    <!-- Top Persistent Header -->
+    <header class="pos-header">
+      <div class="pos-brand">
+        <div class="pos-branding">
+          <img src="image1-optimized.jpg" alt="VENDORA logo" class="brand-mark pos-brand-mark" width="52" height="52" />
+          <span class="logo-accent">VENDORA</span>
+        </div>
+        <span class="terminal-badge">Register #01</span>
+      </div>
+
+      <!-- Active Cashier Bar -->
+      <div class="active-cashier-info">
+        <span class="cashier-avatar" aria-hidden="true">SM</span>
+        <div>
+          <strong id="active-cashier-name">Sarah Mukasa</strong>
+          <span class="shift-float">Float: UGX <span id="display-float">100,000</span></span>
+        </div>
+      </div>
+
+      <div class="pos-header-actions">
+        <button type="button" class="btn-secondary" id="themeToggle" aria-label="Toggle theme">Dark</button>
+        <div class="pos-notification-wrap">
+          <button type="button" class="pos-notification-btn" id="pos-notifications-btn" aria-label="View notifications" aria-expanded="false">
+            <span class="notification-bell" aria-hidden="true">!</span>
+            <span class="notification-badge hidden" id="pos-notification-count">0</span>
+          </button>
+          <div class="pos-notification-panel hidden" id="pos-notifications-panel" role="status" aria-live="polite">
+            <div class="pos-request-notification-section">
+              <div class="pos-notification-panel-header">
+                <div>
+                  <strong>Customer requests</strong>
+                  <span><span id="cashier-request-count">0</span> awaiting attention</span>
+                </div>
+              </div>
+              <div id="cashier-request-list" class="cashier-request-list">
+                <p class="pos-empty-state">Log in to receive online customer requests.</p>
+              </div>
+            </div>
+            <div class="pos-notification-panel-header">
+              <div>
+                <strong>Sale activity</strong>
+                <span>Recent completed sales</span>
+              </div>
+              <button type="button" class="pos-notification-clear" id="clear-pos-notifications">Clear</button>
+            </div>
+            <div class="pos-notification-list" id="pos-notification-list">
+              <p class="pos-notification-empty">No completed sales yet.</p>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn-secondary" id="lock-terminal-btn">
+          Lock Terminal
+        </button>
+        <button type="button" class="btn-danger-outline" id="close-shift-btn">
+          End Shift
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Operational Grid -->
+    <main class="pos-workspace">
+      
+      <!-- LEFT COLUMN: Product Search & Quick Selection -->
+      <section class="pos-catalog">
+        <div class="pos-search-bar">
+          <input 
+            type="text" 
+            id="barcode-input" 
+            placeholder="Scan barcode or type item name..." 
+            autofocus 
+          />
+          <button type="button" class="pos-scan-btn" id="open-qr-scanner" aria-label="Scan QR code">
+            <span aria-hidden="true">QR</span>
+            Scan QR
+          </button>
+        </div>
+
+        <div id="pos-category-filters" class="category-pills" aria-label="Filter inventory by category"></div>
+
+        <div class="pos-product-grid" id="pos-product-grid">
+          <p class="pos-empty-state">Loading catalog...</p>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: Real-Time Ticket & Billing -->
+      <section class="pos-ticket">
+        <div class="ticket-header">
+          <h3>Active Ticket <span id="ticket-number">#1042</span></h3>
+          <button class="btn-clear" id="clear-ticket-btn">Clear All</button>
+        </div>
+
+        <div class="ticket-items-list" id="ticket-items">
+          <p class="pos-empty-state">No items added yet.</p>
+        </div>
+
+        <div class="ticket-summary">
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span id="pos-subtotal">UGX 0</span>
+          </div>
+          <div class="summary-row total-row">
+            <span>Total Payable</span>
+            <span id="pos-total">UGX 0</span>
+          </div>
+
+          <!-- Payment Selector -->
+         <div class="payment-methods" id="payment-methods">
+  <button type="button" class="pay-btn active" data-method="Cash">Cash</button>
+  <button type="button" class="pay-btn" data-method="Mobile Money">Mobile Money</button>
+  <button type="button" class="pay-btn" data-method="Card">Card</button>
+</div>
+
+          <div class="cash-payment-fields" id="cash-payment-fields">
+            <label for="cash-received">Cash received (UGX)</label>
+            <input type="number" id="cash-received" min="0" step="1" placeholder="Enter amount received" />
+            <div class="change-due-row">
+              <span>Change due</span>
+              <strong id="change-due">UGX 0</strong>
+            </div>
+          </div>
+
+          <div class="cash-payment-fields hidden" id="customer-payment-fields">
+            <label for="customer-phone">Customer phone number</label>
+            <input type="tel" id="customer-phone" inputmode="tel" placeholder="e.g. 2567XXXXXXXX" autocomplete="tel" />
+          </div>
+
+          <button class="btn-primary complete-sale-btn" id="pay-now-btn">
+            Complete Sale (Enter)
+          </button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+
+<!-- QR / BARCODE CAMERA SCANNER -->
+<div id="qr-scanner-modal" class="auth-modal-overlay hidden" aria-hidden="true">
+  <div class="auth-modal-card qr-scanner-card">
+    <div class="qr-scanner-header">
+      <div>
+        <span class="auth-icon" aria-hidden="true">Scan</span>
+        <h2>Scan product code</h2>
+        <p id="qr-scanner-status" class="auth-subtitle">Point the camera at a QR code or barcode.</p>
+      </div>
+      <button type="button" class="qr-scanner-close" id="close-qr-scanner" aria-label="Close scanner">&times;</button>
+    </div>
+    <div class="qr-camera-frame">
+      <video id="qr-scanner-video" playsinline muted></video>
+      <span class="qr-camera-guide" aria-hidden="true"></span>
+    </div>
+    <p class="qr-scanner-help">You can also use a USB scanner in the search field.</p>
+  </div>
+</div>
+
+<!-- SALE RECEIPT -->
+<div id="receipt-modal" class="auth-modal-overlay hidden" aria-hidden="true">
+  <div class="auth-modal-card receipt-card">
+    <div class="receipt-header">
+      <div>
+        <span class="auth-icon" aria-hidden="true">Receipt</span>
+        <h2>Sale completed</h2>
+        <p id="receipt-meta" class="auth-subtitle"></p>
+      </div>
+      <button type="button" class="qr-scanner-close" id="close-receipt" aria-label="Close receipt">&times;</button>
+    </div>
+    <div id="receipt-content" class="receipt-content"></div>
+    <div class="receipt-actions">
+      <button type="button" class="btn-secondary" id="close-receipt-secondary">Done</button>
+      <button type="button" class="btn-primary" id="print-receipt">Print receipt</button>
+    </div>
+  </div>
+</div>
+
+<!-- END SHIFT & RECONCILIATION MODAL -->
+<div id="close-shift-modal" class="auth-modal-overlay hidden">
+  <div class="auth-modal-card">
+    <div class="auth-header">
+        <span class="auth-icon" aria-hidden="true">Shift close</span>
+      <p class="auth-subtitle">Reconcile register totals before logging out</p>
+    </div>
+
+    <div style="margin: 1.5rem 0; font-size: 0.95rem; line-height: 1.8;">
+      <div style="display:flex; justify-content:space-between;">
+        <span>Opening Float:</span>
+        <strong id="shift-modal-float">UGX 0</strong>
+      </div>
+      <div style="display:flex; justify-content:space-between;">
+        <span>Cash Sales Collected:</span>
+        <strong id="shift-modal-sales">UGX 0</strong>
+      </div>
+      <hr style="margin: 0.5rem 0; border: none; border-top: 1px dashed #cbd5e1;">
+      <div style="display:flex; justify-content:space-between; font-size: 1.1rem; color: #0f172a;">
+        <span>Expected Cash in Drawer:</span>
+        <strong id="shift-modal-total" style="color: #16a34a;">UGX 0</strong>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem;">
+      <button type="button" class="btn-secondary" id="cancel-end-shift-btn" style="flex: 1;">Resume Shift</button>
+      <button type="button" class="btn-primary btn-danger-outline" id="confirm-end-shift-btn" style="flex: 1; background: #dc2626; color: #fff;">Confirm & Close</button>
+    </div>
+  </div>
+</div>
+</main>
+<!-- Load cashier.js as an ES module (it imports supabase.js automatically) -->
+
+<!-- QUICK CASHIER CALCULATOR MODAL -->
+<div id="calc-modal" class="auth-modal-overlay hidden">
+  <div class="auth-modal-card" style="width: 320px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h3 style="margin:0;">Cashier Calculator</h3>
+      <button id="close-calc-btn" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">Close</button>
+    </div>
+    
+    <input type="text" id="calc-screen" readonly value="0" style="width:100%; text-align:right; font-size:1.5rem; padding:0.5rem; margin-bottom:1rem; border:2px solid #e2e8f0; border-radius:6px;" />
+    
+    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+      <button class="calc-btn btn-danger" data-val="C">C</button>
+      <button class="calc-btn" data-val="DEL">Del</button>
+      <button class="calc-btn" data-val="/">/</button>
+      <button class="calc-btn" data-val="*">*</button>
+      
+      <button class="calc-btn" data-val="7">7</button>
+      <button class="calc-btn" data-val="8">8</button>
+      <button class="calc-btn" data-val="9">9</button>
+      <button class="calc-btn" data-val="-">-</button>
+      
+      <button class="calc-btn" data-val="4">4</button>
+      <button class="calc-btn" data-val="5">5</button>
+      <button class="calc-btn" data-val="6">6</button>
+      <button class="calc-btn" data-val="+">+</button>
+      
+      <button class="calc-btn" data-val="1">1</button>
+      <button class="calc-btn" data-val="2">2</button>
+      <button class="calc-btn" data-val="3">3</button>
+      <button class="calc-btn btn-primary" style="grid-row: span 2;" data-val="=">=</button>
+      
+      <button class="calc-btn" style="grid-column: span 2;" data-val="0">0</button>
+      <button class="calc-btn" data-val=".">.</button>
+    </div>
+  </div>
+</div>
+<script type="module">
+  import { initTheme } from './scripts/modules/theme.js';
+  initTheme();
+</script>
+<script type="module" src="scripts/modules/cashier.js"></script>
+  </body>
+  </html>

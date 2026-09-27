@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VENDORA Operations | Admin</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="cashier-pos.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <!-- Supabase JS Client CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="admin-body">
+
+  <div class="admin-layout">
+    <!-- Header -->
+    <header class="admin-header">
+      <div class="admin-brand">
+        <a class="admin-logo-wrap" href="index.html" aria-label="VENDORA home">
+          <img src="image1-optimized.jpg" alt="VENDORA logo" class="brand-mark admin-brand-mark" width="52" height="52" />
+          <span class="admin-logo">VENDORA<span>.</span></span>
+        </a>
+        <div>
+          <h1>Store operations</h1>
+        </div>
+      </div>
+      <div class="admin-header-actions">
+        <span class="admin-context-label">Management</span>
+        <button id="themeToggle" class="btn-secondary" type="button" aria-label="Toggle theme">Dark</button>
+        <button id="logout-btn" class="btn-danger-outline">Sign out</button>
+      </div>
+    </header>
+
+    <nav class="admin-section-nav" aria-label="Dashboard sections">
+      <a href="#orders-section">Orders</a>
+      <a href="#inventory-section">Inventory</a>
+      <a href="#cashier-access-section">Cashier access</a>
+      <a href="#product-entry-section">Add product</a>
+      <a href="#accountability-section">Cash accountability</a>
+    </nav>
+
+    <main class="admin-workspace">
+      <!-- Section 1: Add New Product Form -->
+      <section id="product-entry-section" class="admin-card admin-product-card">
+        <div class="admin-section-heading">
+          <div>
+            <h3>Add new product</h3>
+          </div>
+        </div>
+        <form id="add-product-form" class="admin-product-form">
+          <input type="text" id="prod-name" placeholder="Item Name (e.g., Fresh Milk 1L)" required />
+          <div class="admin-field">
+            <label for="prod-category">Item category</label>
+            <select id="prod-category" aria-describedby="category-help" required>
+              <option value="" disabled selected>Select Category</option>
+            </select>
+            <small id="category-help">Choose the department customers will see on the shop page.</small>
+          </div>
+          <input type="number" id="prod-price" placeholder="Price (UGX)" min="0" step="50" required />
+          <input type="number" id="prod-stock" placeholder="Stock Qty" min="0" required />
+          <input type="text" id="prod-barcode" placeholder="Barcode / SKU (e.g. 1007)" required />
+          <input type="url" id="prod-image-url" placeholder="Product Image URL (optional)" />
+          <label class="admin-upload-option" for="prod-image-file">
+            Upload image from device
+            <input type="file" id="prod-image-file" accept="image/*" />
+          </label>
+          <button type="submit" class="btn-primary admin-submit-btn">Save product to catalogue <span aria-hidden="true">&rarr;</span></button>
+        </form>
+      </section>
+
+      <!-- Section 2: Inventory Table -->
+      <section id="inventory-section" class="admin-card">
+        <div class="admin-section-heading">
+          <div>
+            <h3>Inventory catalogue</h3>
+          </div>
+        </div>
+        <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Barcode</th><th>Name</th><th>Category</th><th>Price (UGX)</th><th>Available / Total</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-inventory-body">
+            <!-- Items populated via admin.js -->
+          </tbody>
+        </table>
+        </div>
+      </section>
+
+      <section id="cashier-access-section" class="admin-card">
+        <div class="admin-section-heading">
+          <div>
+            <h3>Cashier access</h3>
+            <p>Activate or suspend POS access for each cashier.</p>
+          </div>
+          <label class="admin-field" for="admin-cashier-visibility">
+            <span>View</span>
+            <select id="admin-cashier-visibility">
+              <option value="active">Active cashiers</option>
+              <option value="suspended">Suspended cashiers</option>
+              <option value="all" selected>All cashiers</option>
+            </select>
+          </label>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Cashier</th><th>Code</th><th>Access</th><th>Action</th></tr>
+            </thead>
+            <tbody id="admin-cashiers-body">
+              <tr><td colspan="4" style="padding:0.75rem;">Loading cashier access...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 3: Customer Orders -->
+      <section id="orders-section" class="admin-card">
+        <div class="admin-section-heading admin-orders-heading">
+          <div>
+            <h3>Customer orders</h3>
+            <p>Review recent purchases and keep order statuses current.</p>
+          </div>
+        </div>
+        <div class="admin-order-filters">
+          <label class="admin-field">
+              <span>Search orders</span>
+              <input type="search" id="order-search" placeholder="Order number or payment" />
+          </label>
+          <label class="admin-field">
+              <span>Status</span>
+              <select id="order-status-filter">
+                <option value="all">All statuses</option>
+                <option value="completed">Completed</option>
+                <option value="pending">Pending</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+          </label>
+              <label class="admin-field">
+                <span>View</span>
+                <select id="order-visibility-filter">
+                  <option value="active">Active orders</option>
+                  <option value="archived">Archived orders</option>
+                </select>
+              </label>
+        </div>
+        <div id="admin-orders-status" class="admin-orders-status" role="status" aria-live="polite"></div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Order</th><th>Date</th><th>Items</th><th>Payment</th><th>Cashier</th><th>Total</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-orders-body">
+              <tr><td colspan="8" style="padding:0.75rem;">Loading customer orders...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="accountability-section" class="admin-card">
+        <div class="admin-section-heading">
+          <div>
+            <h3>Cash accountability</h3>
+            <p>Recent sale actions recorded by the system.</p>
+          </div>
+          <button id="refreshAuditBtn" class="btn-secondary" type="button">Refresh log</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Time</th><th>Order</th><th>Action</th><th>Cashier</th><th>Details</th></tr>
+            </thead>
+            <tbody id="admin-audit-body">
+              <tr><td colspan="5" style="padding:0.75rem;">Loading audit log...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script type="module">
+    import { supabase } from './scripts/modules/supabase.js';
+    import { initAdmin } from './scripts/modules/admin.js';
+    import { initTheme } from './scripts/modules/theme.js';
+
+    initTheme();
+
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+      window.location.replace('index.html?admin=sign-in-required');
+    } else if (session.user?.app_metadata?.role !== 'admin') {
+      await supabase.auth.signOut();
+      window.location.replace('index.html?admin=not-authorized');
+    } else {
+      initAdmin();
+      document.getElementById('logout-btn')?.addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        window.location.replace('index.html');
+      });
+    }
+  </script>
+</body>
+</html>
