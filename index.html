@@ -32,44 +32,46 @@
       </a>
 
       <!-- Navigation Links -->
-      <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="primaryNavigation">
+      <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="mobileMenu">
         <span></span><span></span><span></span>
       </button>
 
-      <ul id="primaryNavigation" class="nav-links">
-        <li><a href="#home" class="nav-link active">Home</a></li>
-        <li><a href="#products" class="nav-link">Shop</a></li>
-        <li><a href="#services" class="nav-link">Services</a></li>
-        <li><a href="#contact" class="nav-link">Contact</a></li>
-      </ul>
+      <div id="mobileMenu" class="mobile-menu">
+        <ul id="primaryNavigation" class="nav-links">
+          <li><a href="#home" class="nav-link active">Home</a></li>
+          <li><a href="#products" class="nav-link">Shop</a></li>
+          <li><a href="#services" class="nav-link">Services</a></li>
+          <li><a href="#contact" class="nav-link">Contact</a></li>
+        </ul>
 
-      <!-- Quick Action Controls -->
-      <div class="nav-actions">
-        <a href="cashier.html" class="icon-pill-btn pos-btn-accent">
-          <span class="btn-text">POS Mode</span>
-        </a>
+        <!-- Quick Action Controls -->
+        <div class="nav-actions">
+          <a href="cashier.html" class="icon-pill-btn pos-btn-accent">
+            <span class="btn-text">Cashier</span>
+          </a>
 
-        <button id="openAdminModalLink" class="icon-pill-btn" aria-label="Admin Login">
-          <span class="btn-text">Admin</span>
-        </button>
+          <button id="openAdminModalLink" class="icon-pill-btn" aria-label="Admin Login">
+            <span class="btn-text">Admin</span>
+          </button>
 
-        <button id="customerAuthBtn" class="icon-pill-btn" aria-label="Sign in to customer account">
-          <span class="btn-text">Sign in</span>
-        </button>
+          <button id="customerAuthBtn" class="icon-pill-btn" aria-label="Sign in to customer account">
+            <span class="btn-text">Sign in</span>
+          </button>
 
-        <button id="customerOrdersBtn" class="icon-pill-btn" aria-label="View your orders" hidden>
-          <span class="btn-text">Orders</span>
-          <span id="customerOrderBadge" class="cart-badge" hidden>0</span>
-        </button>
+          <button id="customerOrdersBtn" class="icon-pill-btn" aria-label="View your orders">
+            <span class="btn-text">Orders</span>
+            <span id="customerOrderBadge" class="cart-badge" hidden>0</span>
+          </button>
 
-        <button id="themeToggle" class="icon-pill-btn" aria-label="Toggle theme">
-          <span class="btn-text">Dark</span>
-        </button>
+          <button id="themeToggle" class="icon-pill-btn" aria-label="Toggle theme">
+            <span class="btn-text">Dark</span>
+          </button>
 
-        <button id="cartBtn" class="icon-pill-btn cart-btn-accent" aria-label="View Shopping Cart">
-          <span class="btn-text">Cart</span>
-          <span id="cartBadge" class="cart-badge">0</span>
-        </button>
+          <button id="cartBtn" class="icon-pill-btn cart-btn-accent" aria-label="View Shopping Cart">
+            <span class="btn-text">Cart</span>
+            <span id="cartBadge" class="cart-badge">0</span>
+          </button>
+        </div>
       </div>
     </nav>
   </header>

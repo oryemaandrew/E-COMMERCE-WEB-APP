@@ -97,6 +97,17 @@ header,
   padding: 0.85rem 2rem;
 }
 
+.mobile-menu {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+}
+
+.mobile-nav-toggle {
+  display: none;
+}
+
 .logo {
   font-size: 1.6rem;
   font-weight: 800;
@@ -3785,55 +3796,6 @@ body { background: var(--bg-main); }
   .nav-container { flex-wrap: nowrap; gap: 0.4rem; padding-right: 0.75rem; padding-left: 0.75rem; }
   .site-header .brand-mark { width: 36px; height: 36px; border-radius: 7px; }
   .site-header .logo { gap: 0.35rem; font-size: 1.2rem; }
-  .nav-actions { margin-left: auto; gap: 0.25rem; }
-  .nav-actions .icon-pill-btn { min-height: 40px; padding: 0.4rem 0.45rem; font-size: 0.7rem; }
-  .nav-actions .pos-btn-accent, .nav-actions button:not(#cartBtn):not(#themeToggle) { display: none; }
-  .nav-actions #themeToggle .btn-text,
-  .nav-actions #cartBtn .btn-text { display: inline; }
-  .mobile-nav-toggle {
-    display: grid;
-    flex: 0 0 40px;
-    place-content: center;
-    gap: 4px;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--bg-card);
-    cursor: pointer;
-  }
-  .mobile-nav-toggle span {
-    display: block;
-    width: 18px;
-    height: 2px;
-    border-radius: 1px;
-    background: var(--text-main);
-  }
-  .nav-links {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    left: 0;
-    z-index: 1001;
-    display: none;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-    margin: 0;
-    padding: 0.4rem 1rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-card);
-    box-shadow: 0 12px 20px rgba(20, 37, 30, 0.12);
-  }
-  .nav-links.is-open { display: flex; }
-  .nav-links li { display: block; }
-  .nav-links a {
-    display: block;
-    padding: 0.8rem 0.25rem;
-    border-bottom: 1px solid var(--border);
-  }
-  .nav-links li:last-child a { border-bottom: 0; }
   .hero-title { font-size: clamp(3rem, 16vw, 4.2rem); }
   .hero-description { font-size: 0.92rem; }
   .hero-actions { margin-bottom: 2.5rem; }
@@ -4322,4 +4284,72 @@ body.admin-body .admin-access-status.is-suspended {
 [data-theme="dark"] body.admin-body .admin-access-status.is-suspended {
   background: #202a23;
   color: #c0cdc4;
+}
+
+@media (max-width: 760px) {
+  .nav-container {
+    flex-wrap: nowrap;
+    gap: 0.6rem;
+    padding: 0.65rem 1rem;
+  }
+
+  .mobile-nav-toggle {
+    display: grid;
+    flex: 0 0 40px;
+    place-content: center;
+    gap: 4px;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-card);
+    cursor: pointer;
+  }
+
+  .mobile-nav-toggle span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--text-main);
+  }
+
+  .mobile-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    z-index: 1001;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0.5rem 1rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+    box-shadow: 0 12px 20px rgba(20, 37, 30, 0.12);
+  }
+
+  .mobile-menu.is-open { display: flex; }
+  .nav-links { flex-direction: column; align-items: stretch; width: 100%; gap: 0; margin: 0; }
+  .nav-links li { display: block; }
+  .nav-links a { display: block; padding: 0.7rem 0.25rem; border-bottom: 1px solid var(--border); }
+  .nav-links li:last-child a { border-bottom: 0; }
+  .nav-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; gap: 0.5rem; margin: 0; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+  .nav-actions .icon-pill-btn,
+  .nav-actions .pos-btn-accent,
+  .nav-actions button:not(#cartBtn):not(#themeToggle) { display: flex; min-height: 44px; width: 100%; justify-content: center; padding: 0.6rem 0.75rem; font-size: 0.78rem; }
+  .nav-actions [hidden] { display: none !important; }
+  .nav-actions .btn-text { display: inline; }
+}
+
+.delete-product-btn {
+  background: rgba(23, 107, 77, 0.92);
+  box-shadow: 0 4px 12px rgba(23, 107, 77, 0.24);
+}
+
+.delete-product-btn:hover {
+  background: #145a40;
+  box-shadow: 0 6px 16px rgba(20, 90, 64, 0.32);
 }

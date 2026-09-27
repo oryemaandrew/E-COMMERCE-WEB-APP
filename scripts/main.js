@@ -60,22 +60,22 @@ async function initializeApp() {
 
 function initMobileNavigation() {
   const toggle = document.getElementById('mobileNavToggle');
-  const navigation = document.getElementById('primaryNavigation');
-  if (!toggle || !navigation) return;
+  const menu = document.getElementById('mobileMenu');
+  if (!toggle || !menu) return;
 
   const closeNavigation = () => {
-    navigation.classList.remove('is-open');
+    menu.classList.remove('is-open');
     toggle.setAttribute('aria-expanded', 'false');
     toggle.setAttribute('aria-label', 'Open navigation');
   };
 
   toggle.addEventListener('click', () => {
-    const isOpen = navigation.classList.toggle('is-open');
+    const isOpen = menu.classList.toggle('is-open');
     toggle.setAttribute('aria-expanded', String(isOpen));
     toggle.setAttribute('aria-label', isOpen ? 'Close navigation' : 'Open navigation');
   });
 
-  navigation.querySelectorAll('a').forEach(link => link.addEventListener('click', closeNavigation));
+  menu.querySelectorAll('a, button').forEach(control => control.addEventListener('click', closeNavigation));
   window.addEventListener('resize', () => {
     if (window.innerWidth > 760) closeNavigation();
   });

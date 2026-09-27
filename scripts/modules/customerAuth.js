@@ -158,7 +158,7 @@ export function initCustomerAuth() {
     currentSession = session;
     authButton.textContent = session ? 'Sign out' : 'Sign in';
     authButton.setAttribute('aria-label', session ? 'Sign out of customer account' : 'Sign in to customer account');
-    if (ordersButton) ordersButton.hidden = !session;
+    if (ordersButton) ordersButton.hidden = false;
     if (!session) {
       ordersPanelOpen = false;
       ordersPanel?.setAttribute('hidden', '');
@@ -192,6 +192,12 @@ export function initCustomerAuth() {
   });
 
   ordersButton?.addEventListener('click', () => {
+    if (!currentSession) {
+      openModal();
+      setStatus('Sign in to view your orders.');
+      return;
+    }
+
     ordersPanelOpen = true;
     ordersPanel?.removeAttribute('hidden');
     ordersPanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
