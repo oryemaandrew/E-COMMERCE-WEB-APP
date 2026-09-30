@@ -80,18 +80,12 @@ export function initCart() {
 
   function openCheckout() {
     if (!cart.length) {
-      if (cartStatus) {
-        cartStatus.textContent = 'Your cart is empty. Add an item before starting payment.';
-        cartStatus.hidden = false;
-      }
+      closeCart();
+      window.location.href = 'checkout.html';
       return;
     }
-    if (cartStatus) cartStatus.hidden = true;
-    if (checkoutTotal) checkoutTotal.textContent = formatCurrency(getCartTotal());
-    if (checkoutStatus) checkoutStatus.hidden = true;
     closeCart();
-    if (checkoutOverlay) checkoutOverlay.hidden = false;
-    document.getElementById('checkoutName')?.focus();
+    window.location.href = 'checkout.html';
   }
 
   function closeCheckout() {

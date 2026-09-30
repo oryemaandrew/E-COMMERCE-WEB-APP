@@ -8,7 +8,6 @@ import { initAdminAuth } from './modules/auth.js';
 import { initCustomerAuth } from './modules/customerAuth.js';
 import { renderProducts, initFilters, initProductDetails } from './modules/products.js';
 import { initCart } from './modules/cart.js';
-import { initAdmin, setupDeleteListeners } from './modules/admin.js';
 import { initTheme } from './modules/theme.js';
 import { initCustomerRequestForm } from './modules/contact.js';
 
@@ -54,8 +53,10 @@ async function initializeApp() {
   initProductDetails();
   initCustomerRequestForm();
 
-  if (typeof initAdmin === 'function') initAdmin();
-  if (typeof setupDeleteListeners === 'function') setupDeleteListeners();
+  if (document.querySelector('.delete-product-btn')) {
+    const { setupDeleteListeners } = await import('./modules/admin.js');
+    setupDeleteListeners();
+  }
 }
 
 function initMobileNavigation() {

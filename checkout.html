@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Complete your VENDORA order with secure Pesapal checkout.">
+  <title>Secure Checkout | VENDORA</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/checkout.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="checkout-page">
+  <header class="checkout-topbar">
+    <a class="checkout-brand" href="index.html" aria-label="VENDORA home">
+      <img src="image1-optimized.jpg" alt="" width="42" height="42">
+      <span>VENDORA<span class="checkout-brand-dot">.</span></span>
+    </a>
+    <div class="checkout-topbar-right">
+      <span class="checkout-secure-label"><span aria-hidden="true">01</span> Secure checkout</span>
+      <button id="themeToggle" class="checkout-theme-toggle" type="button" aria-label="Toggle theme">Dark</button>
+      <a class="checkout-back-link" href="index.html#products">Back to shop</a>
+    </div>
+  </header>
+
+  <main class="checkout-main">
+    <div class="checkout-intro">
+      <span class="checkout-eyebrow">VENDORA / PAYMENT</span>
+      <h1>Complete your order</h1>
+      <p>Your order, ready for secure payment.</p>
+    </div>
+
+    <ol class="checkout-progress" aria-label="Checkout progress">
+      <li class="is-current"><span>01</span><div><strong>Your details</strong><small>Contact information</small></div></li>
+      <li class="checkout-progress-line" aria-hidden="true"></li>
+      <li><span>02</span><div><strong>Payment</strong><small>Pesapal secure payment</small></div></li>
+    </ol>
+
+    <div id="checkoutContent" class="checkout-layout">
+      <section class="checkout-details" aria-labelledby="checkoutDetailsTitle">
+        <div class="checkout-section-heading">
+          <span class="checkout-section-number">01</span>
+          <div>
+            <h2 id="checkoutDetailsTitle">Contact details</h2>
+            <p>We’ll use these details to process your order.</p>
+          </div>
+        </div>
+
+        <form id="checkoutForm" class="checkout-form">
+          <div class="checkout-form-field">
+            <label for="checkoutName">Full name</label>
+            <input id="checkoutName" name="customerName" type="text" autocomplete="name" placeholder="Name on your order" maxlength="120" required>
+          </div>
+          <div class="checkout-form-field">
+            <label for="checkoutPhone">Phone number</label>
+            <input id="checkoutPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="07XXXXXXXX or +256 7XX XXX XXX" required>
+            <small>Use the Uganda number that should receive the payment prompt.</small>
+          </div>
+          <div class="checkout-form-field">
+            <label for="checkoutEmail">Email address <span>(optional)</span></label>
+            <input id="checkoutEmail" name="email" type="email" autocomplete="email" placeholder="you@example.com">
+          </div>
+
+          <div class="checkout-payment-choice" aria-label="Payment provider">
+            <span class="checkout-payment-mark" aria-hidden="true">P</span>
+            <div><strong>Pay securely with Pesapal</strong><small>Mobile Money, cards and available local methods</small></div>
+            <span class="checkout-payment-selected" aria-label="Selected">Selected</span>
+          </div>
+
+          <p id="checkoutStatus" class="checkout-status" role="status" aria-live="polite" hidden></p>
+          <button id="authorizePaymentBtn" class="checkout-submit" type="submit">
+            <span>Continue to secure payment</span>
+          </button>
+          <p class="checkout-privacy-note">Your payment details are handled securely by Pesapal.</p>
+        </form>
+      </section>
+
+    </div>
+
+    <section id="checkoutEmpty" class="checkout-empty" hidden>
+      <span class="checkout-empty-mark" aria-hidden="true">V.</span>
+      <h2>Your cart is empty</h2>
+      <p>Add something to your order before continuing to payment.</p>
+      <a href="index.html#products">Return to the shop</a>
+    </section>
+  </main>
+
+  <footer class="checkout-footer">
+    <div class="checkout-footer-inner">
+      <a class="checkout-footer-brand" href="index.html" aria-label="VENDORA home">VENDORA<span>.</span></a>
+      <p class="checkout-footer-secure"><span class="checkout-footer-mark" aria-hidden="true">02</span> Payments secured by Pesapal</p>
+      <a class="checkout-footer-link" href="index.html#products">Back to shop <span aria-hidden="true">&rarr;</span></a>
+    </div>
+  </footer>
+
+  <script type="module" src="scripts/modules/checkout.js"></script>
+</body>
+</html>

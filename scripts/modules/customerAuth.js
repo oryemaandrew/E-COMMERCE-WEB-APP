@@ -167,7 +167,7 @@ export function initCustomerAuth() {
       if (orderBadge) orderBadge.hidden = true;
       return;
     }
-    renderCustomerOrders();
+    if (ordersPanelOpen) renderCustomerOrders();
   };
 
   authButton.addEventListener('click', async () => {
@@ -214,7 +214,7 @@ export function initCustomerAuth() {
   });
 
   window.setInterval(() => {
-    if (currentSession) renderCustomerOrders(true);
+    if (currentSession && ordersPanelOpen) renderCustomerOrders(true);
   }, 30000);
 
   form.addEventListener('submit', async (event) => {

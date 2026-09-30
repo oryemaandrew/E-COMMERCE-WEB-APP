@@ -402,7 +402,7 @@ app.post('/api/payments/pesapal', async (req, res) => {
     const token = await getPesapalToken();
 
     const orderPayload = {
-      id: `POS-ORD-${orderId}-${Date.now()}`,
+      id: `${source === 'storefront' ? 'STORE' : 'POS'}-ORD-${orderId}-${Date.now()}`,
       currency: "UGX",
       amount: amountToCharge,
       description: `Payment for Supermarket POS Order #${orderId}`,
@@ -560,15 +560,18 @@ app.get('/api/orders/:id/status', async (req, res) => {
  */
 app.get('/api/payments/pesapal-callback', async (req, res) => {
   const { OrderTrackingId, OrderMerchantReference } = req.query;
-
-  // Extract original orderId from MerchantReference "POS-ORD-{orderId}-{timestamp}"
-  const parts = OrderMerchantReference ? OrderMerchantReference.split('-') : [];
-  const orderId = parts.length >= 3 ? parts[2] : null;
+  const merchantReference = String(OrderMerchantReference || '');
+  const isStorefront = merchantReference.startsWith('STORE-ORD-');
+  const prefix = isStorefront ? 'STORE-ORD-' : 'POS-ORD-';
+  const orderId = merchantReference.startsWith(prefix)
+    ? merchantReference.slice(prefix.length).replace(/-\d+$/, '')
+    : null;
 
   console.log(`[Pesapal Callback] Returned for Order #${orderId}, Tracking ID: ${OrderTrackingId}`);
 
   if (orderId) {
-    const callbackUrl = new URL('/cashier.html', `${frontendUrl}/`);
+    const callbackPage = isStorefront ? '/checkout.html' : '/cashier.html';
+    const callbackUrl = new URL(callbackPage, `${frontendUrl}/`);
     callbackUrl.searchParams.set('orderId', orderId);
     callbackUrl.searchParams.set('trackingId', OrderTrackingId || '');
     callbackUrl.searchParams.set('status', 'processing');

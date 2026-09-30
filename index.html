@@ -6,8 +6,53 @@
   <meta name="description" content="VENDORA offers groceries, everyday essentials, apparel, and convenient delivery in one trusted online store.">
   <title>VENDORA Market | Groceries and Everyday Essentials</title>
   
-  <link rel="stylesheet" href="styles/main.css">
-  <link rel="preload" as="image" href="https://images.unsplash.com/photo-1542838132-92c53300491e?w=900&amp;auto=format&amp;fit=crop&amp;q=75" fetchpriority="high">
+  <style>
+    :root { --primary: #6c2bd9; --accent: #e48999; --accent-strong: #bd5d78; --accent-soft: #fcecf1; --bg-main: #fff; --bg-card: #f5f3ff; --bg-nav: rgba(255,255,255,.96); --text-main: #241d2d; --text-muted: #6e6677; --border: #e6def5; --display-font: 'Space Grotesk', 'DM Sans', sans-serif; }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: #fff; color: #241d2d; font-family: 'DM Sans', sans-serif; line-height: 1.6; }
+    .store-announcement { display: flex; justify-content: center; gap: 2rem; padding: .5rem 1rem; background: #6c2bd9; color: #fff; font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .announcement-secondary { color: #9e405c; }
+    .site-header { position: sticky; top: 0; z-index: 1000; background: rgba(255,255,255,.96); border-bottom: 1px solid #e6def5; }
+    .nav-container { max-width: 1320px; min-height: 72px; margin: 0 auto; padding: .65rem clamp(1rem,3vw,2.5rem); display: flex; align-items: center; justify-content: space-between; gap: 1.25rem; }
+    .logo { display: inline-flex; align-items: center; gap: .6rem; color: #6c2bd9; font-family: 'Manrope',sans-serif; font-size: 1.75rem; font-weight: 800; text-decoration: none; }
+    .brand-mark { display: block; width: 46px; height: 46px; border-radius: 8px; object-fit: cover; }
+    .logo-wording { display: inline-flex; align-items: center; }
+    .logo-dot { color: #e48999; }
+    .mobile-menu { display: flex; flex: 1 1 auto; min-width: 0; align-items: center; }
+    .nav-links { display: flex; flex: 1 1 auto; justify-content: center; align-items: center; gap: clamp(1rem,2vw,2rem); margin: 0; padding: 0; list-style: none; }
+    .nav-links a { color: #241d2d; font-size: .82rem; font-weight: 700; text-decoration: none; text-transform: uppercase; }
+    .nav-actions { display: flex; align-items: center; gap: .45rem; }
+    .icon-pill-btn { min-height: 40px; padding: .55rem .8rem; border: 1px solid #e6def5; border-radius: 7px; background: #fff; color: #241d2d; font: inherit; font-size: .78rem; }
+    .cart-btn-accent { background: #6c2bd9; border-color: #6c2bd9; color: #fff; }
+    .mobile-nav-toggle { display: none; }
+    .hero-container { display: grid; grid-template-columns: minmax(0,.9fr) minmax(420px,.95fr); align-items: center; gap: clamp(2rem,7vw,8rem); max-width: 1320px; min-height: 570px; margin: 0 auto; padding: 5.5rem 2.5rem 4.5rem; }
+    .hero-content { max-width: 590px; }
+    .hero-tag { display: block; margin-bottom: 1.3rem; color: #9e405c; font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; }
+    .hero-title { max-width: 650px; margin: 0 0 1.5rem; color: #241d2d; font-family: var(--display-font); font-size: clamp(3.4rem,6vw,5.7rem); line-height: .98; }
+    .gradient-text { color: #9e405c; }
+    .hero-description { max-width: 500px; margin: 0 0 2rem; color: #6e6677; font-size: 1rem; line-height: 1.75; }
+    .hero-actions { display: flex; gap: .65rem; margin-bottom: 3.2rem; }
+    .hero-actions .btn { display: inline-flex; justify-content: center; align-items: center; padding: .8rem 1.2rem; border: 1px solid #6c2bd9; border-radius: 7px; background: #6c2bd9; color: #fff; font-weight: 700; text-decoration: none; }
+    .hero-actions .btn-secondary { background: #f5f3ff; color: #6c2bd9; }
+    .hero-stats { display: flex; align-items: center; gap: 1.8rem; padding-top: 1.25rem; border-top: 1px solid #e6def5; }
+    .stat-number { display: block; font-family: var(--display-font); font-size: 1.35rem; }
+    .stat-label { display: block; color: #6e6677; font-size: .72rem; text-transform: uppercase; }
+    .hero-visual { position: relative; display: flex; align-items: flex-end; min-height: 450px; overflow: hidden; border-radius: 8px; box-shadow: 0 26px 55px rgba(40,45,51,.16); }
+    .hero-image { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; }
+    .hero-visual::after { position: absolute; z-index: 1; inset: 0; background: linear-gradient(180deg,rgba(40,45,51,.02),rgba(40,45,51,.35)); content: ''; pointer-events: none; }
+    .hero-visual::before { position: absolute; z-index: 2; top: 1.4rem; right: 1.5rem; color: rgba(255,255,255,.9); content: 'VENDORA / MARKET'; font-size: .7rem; font-weight: 700; letter-spacing: .12em; }
+    .hero-badge { position: relative; z-index: 2; display: flex; align-items: center; gap: 1rem; margin: 1.5rem; padding: .85rem 1rem; border-radius: 7px; background: rgba(40,45,51,.9); color: #fff; }
+    .hero-badge strong, .hero-badge p { display: block; margin: 0; }
+    .hero-badge p { color: #e3d9ef; font-size: .75rem; }
+    .badge-icon { color: #e48999; font-family: var(--display-font); font-size: 1.1rem; }
+    .hero-product-stamp { position: absolute; z-index: 2; top: 3.8rem; left: 1.5rem; display: grid; width: 92px; height: 92px; place-content: center; transform: rotate(-9deg); border-radius: 50%; background: #e48999; color: #241d2d; text-align: center; text-transform: uppercase; }
+    .hero-product-stamp span { font-size: .6rem; font-weight: 800; }
+    .hero-product-stamp strong { font-family: var(--display-font); font-size: .78rem; line-height: 1.05; }
+    @media (max-width: 900px) { .hero-container { grid-template-columns: 1fr; min-height: auto; padding: 4rem 1.25rem 3rem; } .hero-content { max-width: 700px; } .hero-visual { min-height: 390px; } }
+    @media (max-width: 760px) { .nav-container { position: relative; flex-wrap: nowrap; gap: .6rem; padding: .65rem 1rem; } .site-header .brand-mark { width: 36px; height: 36px; } .site-header .logo { gap: .35rem; font-size: 1.2rem; } .mobile-nav-toggle { display: grid; flex: 0 0 40px; place-content: center; gap: 4px; width: 40px; height: 40px; padding: 0; border: 1px solid #e6def5; border-radius: 6px; background: #f5f3ff; } .mobile-nav-toggle span { display: block; width: 18px; height: 2px; background: #241d2d; } .mobile-menu { position: absolute; top: 100%; right: 0; left: 0; z-index: 1001; display: none; flex-direction: column; align-items: stretch; padding: .5rem 1rem 1rem; background: #f5f3ff; } .mobile-menu.is-open { display: flex; } .nav-links { flex-direction: column; align-items: stretch; width: 100%; gap: 0; } .nav-links a { display: block; padding: .7rem .25rem; border-bottom: 1px solid #e6def5; } .nav-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); width: 100%; padding-top: .75rem; } .hero-container { gap: 2.5rem; padding: 4rem 1.25rem 2rem; } .hero-title { font-size: clamp(3rem,16vw,4.2rem); } .hero-visual { min-height: 330px; } .announcement-secondary { display: none; } }
+  </style>
+  <link rel="preload" href="styles/main.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="styles/main.css"></noscript>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
@@ -111,6 +156,7 @@
 
   <!-- Hero Visual Card Showcase -->
   <div class="hero-visual">
+    <img class="hero-image" src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=768&amp;auto=format&amp;fit=crop&amp;q=58" width="960" height="960" alt="Fresh seasonal produce at VENDORA Market" fetchpriority="high" loading="eager" decoding="async">
     <div class="hero-card-glow"></div>
     <div class="hero-badge">
       <span class="badge-icon">01</span>
@@ -194,45 +240,6 @@
   </div>
 
   <div class="contact-grid">
-    <div class="contact-info-panel">
-      <div class="system-status-card" aria-label="Support availability">
-        <span class="status-pulse" aria-hidden="true"></span>
-        <div>
-          <strong>Support is currently available</strong>
-          <p>Most messages receive a response within 15 minutes.</p>
-        </div>
-      </div>
-
-      <div class="dept-list">
-        <div class="dept-card">
-          <div class="dept-icon" aria-hidden="true">01</div>
-          <div class="dept-content">
-            <h3>Customer Concierge &amp; Orders</h3>
-            <p>Direct assistance for personal styling, sizing, and active order tracking.</p>
-            <a href="https://wa.me/256767205641" class="dept-link" target="_blank" rel="noopener">Chat on WhatsApp <span aria-hidden="true">&rarr;</span></a>
-          </div>
-        </div>
-
-        <div class="dept-card">
-          <div class="dept-icon" aria-hidden="true">02</div>
-          <div class="dept-content">
-            <h3>Wholesale &amp; Corporate Partnerships</h3>
-            <p>Bulk inquiries, retail distribution, and brand partnership opportunities.</p>
-            <a href="mailto:oryemaandrew@22gmail.com" class="dept-link">oryemaandrew@22gmail.com</a>
-          </div>
-        </div>
-
-        <div class="dept-card">
-          <div class="dept-icon" aria-hidden="true">03</div>
-          <div class="dept-content">
-            <h3>Mbarara Headquarters</h3>
-            <p>Mbarara, Uganda</p>
-            <span class="contact-time">Mon - Sat | 08:00 - 20:00 EAT</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div class="contact-form-panel">
       <div class="form-heading">
         <span class="form-eyebrow">Direct support</span>
@@ -477,42 +484,46 @@
   </div>
 </aside>
 
-<div id="checkoutOverlay" class="checkout-overlay" hidden>
-  <section class="checkout-dialog" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
-    <div class="checkout-header">
-      <div>
-
-        <span class="section-kicker">Pesapal payment</span>
-        <h2 id="checkoutTitle">Authorize your order</h2>
-      </div>
-      <button id="closeCheckoutBtn" class="close-btn" type="button" aria-label="Close payment form">&times;</button>
-    </div>
-    <p class="checkout-summary">Your cart total is <strong id="checkoutTotal">UGX 0</strong>.</p>
-    <form id="checkoutForm" class="checkout-form">
-      <div class="form-group">
-        <label for="checkoutName">Customer name</label>
-        <input id="checkoutName" name="customerName" type="text" autocomplete="name" required />
-      </div>
-      <div class="form-group">
-        <label for="checkoutPhone">Phone number</label>
-        <input id="checkoutPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="07XXXXXXXX or 2567XXXXXXXX" required />
-        <small>Use the Uganda number that should receive the payment prompt.</small>
-      </div>
-      <div class="form-group">
-        <label for="checkoutEmail">Email address</label>
-        <input id="checkoutEmail" name="email" type="email" autocomplete="email" placeholder="you@example.com" />
-      </div>
-      <p class="checkout-provider-note">You will be redirected to Pesapal to choose an available payment method.</p>
-      <p id="checkoutStatus" class="form-status" role="status" aria-live="polite" hidden></p>
-      <button id="authorizePaymentBtn" class="btn btn-primary btn-block" type="submit">Continue to Pesapal</button>
-    </form>
-  </section>
-</div>
-
 <footer class="site-footer">
   <div class="footer-content">
-    <p>&copy; 2026 VENDORA Corporate. All Rights Reserved.</p>
-   
+    <div class="footer-support-status" aria-label="Support availability">
+      <span class="status-pulse" aria-hidden="true"></span>
+      <div>
+        <strong>Support is currently available</strong>
+        <p>Most messages receive a response within 15 minutes.</p>
+      </div>
+    </div>
+
+    <div class="footer-contact-grid">
+      <section class="footer-contact-item">
+        <span class="footer-contact-number">01</span>
+        <div>
+          <h2>Customer Concierge &amp; Orders</h2>
+          <p>Direct assistance for personal styling, sizing, and active order tracking.</p>
+          <a href="https://wa.me/256767205641" target="_blank" rel="noopener">Chat on WhatsApp <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </section>
+
+      <section class="footer-contact-item">
+        <span class="footer-contact-number">02</span>
+        <div>
+          <h2>Wholesale &amp; Corporate Partnerships</h2>
+          <p>Bulk inquiries, retail distribution, and brand partnership opportunities.</p>
+          <a href="mailto:oryemaandrew@22gmail.com">oryemaandrew@22gmail.com</a>
+        </div>
+      </section>
+
+      <section class="footer-contact-item">
+        <span class="footer-contact-number">03</span>
+        <div>
+          <h2>Mbarara Headquarters</h2>
+          <p>Mbarara, Uganda</p>
+          <span class="footer-contact-hours">Mon - Sat | 08:00 - 20:00 EAT</span>
+        </div>
+      </section>
+    </div>
+
+    <p class="footer-copyright">&copy; 2026 VENDORA Corporate. All Rights Reserved.</p>
   </div>
 </footer>
 
