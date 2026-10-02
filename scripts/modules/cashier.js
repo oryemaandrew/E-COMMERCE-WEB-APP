@@ -516,6 +516,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const value = String(rawValue || '').trim();
     if (!value) return false;
 
+    if (value.startsWith('VENDORA-PICKUP:')) {
+      closeQrScanner();
+      void verifyPickupCode(value);
+      return true;
+    }
+
     let lookupValue = value;
     let requestedQuantity = 1;
     try {
@@ -555,6 +561,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     return true;
   }
 
+  async function verifyPickupCode(code) {
+    if (!activeShift) {
+      alert('Sign in and open a cashier shift before verifying pickup orders.');
+      return;
+    }
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+      const response = await fetch(`${paymentApiBase}/api/cashier/verify-pickup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+        },
+        body: JSON.stringify({ code })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.success || !result.paid) {
+        throw new Error(result.error || 'Payment could not be verified. Do not release the order.');
+      }
+
+      alert(`Payment verified for order #${result.orderId}.\n${result.paymentMethod} · UGX ${Number(result.totalAmount).toLocaleString()}`);
+    } catch (error) {
+      alert(`Pickup not verified: ${error.message}`);
+    }
+  }
+
   // 6. Barcode Scanner / Enter Action
   barcodeInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
@@ -577,15 +611,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     const statusHeaders = sessionData?.session?.access_token
       ? { Authorization: `Bearer ${sessionData.session.access_token}` }
       : {};
+    let verificationError = '';
 
     for (let attempt = 0; attempt < 60; attempt += 1) {
       await new Promise(resolve => setTimeout(resolve, 3000));
       const response = await fetch(`${paymentApiBase}/api/orders/${encodeURIComponent(order.id)}/status`, {
         headers: statusHeaders
       });
-      if (!response.ok) continue;
-
-      const currentOrder = await response.json();
+      const currentOrder = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        if (response.status >= 500) {
+          verificationError = currentOrder.error || 'Unable to verify payment with Pesapal. Retry shortly.';
+          continue;
+        }
+        throw new Error(currentOrder.error || `Unable to verify payment (HTTP ${response.status}).`);
+      }
       if (currentOrder.status === 'completed') {
         addSaleNotification(order.id, total, currentOrder.payment_method || 'Pesapal');
         showReceipt(currentOrder, saleItems, total, currentOrder.payment_method || 'Pesapal', 0);
@@ -596,10 +636,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
       if (currentOrder.status === 'failed') {
-        throw new Error('Pesapal payment was not completed.');
+        throw new Error(`Pesapal reports this payment as ${currentOrder.pesapalStatus || 'failed'}. If your payment confirmation says otherwise, retry verification before releasing the order.`);
       }
     }
-    throw new Error('Timed out waiting for Pesapal payment confirmation.');
+    throw new Error(verificationError || 'Timed out waiting for Pesapal payment confirmation.');
   }
 
   async function completeSale() {

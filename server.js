@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import QRCode from 'qrcode';
 
 dotenv.config();
 
@@ -56,6 +57,11 @@ const CASHIER_AUTH_LIMIT = 8;
 
 function isValidUuid(value) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
+}
+
+function isValidOrderId(value) {
+  const normalizedId = String(value || '');
+  return isValidUuid(normalizedId) || /^[1-9]\d{0,19}$/.test(normalizedId);
 }
 
 function createOrderStatusToken(orderId) {
@@ -218,6 +224,76 @@ app.post('/api/cashier/auth', async (req, res) => {
   } catch (error) {
     console.error('Cashier authentication error:', error.message);
     return res.status(500).json({ success: false, error: 'Unable to start cashier shift.' });
+  }
+});
+
+app.post('/api/cashier/verify-pickup', async (req, res) => {
+  const authorization = String(req.headers.authorization || '');
+  const accessToken = authorization.startsWith('Bearer ')
+    ? authorization.slice('Bearer '.length).trim()
+    : '';
+  const scannedCode = String(req.body?.code || '');
+  const match = /^VENDORA-PICKUP:([0-9a-f-]{36}|[1-9]\d{0,19}):([a-f0-9]{64})$/i.exec(scannedCode);
+
+  if (!accessToken) {
+    return res.status(401).json({ success: false, error: 'Cashier sign-in is required.' });
+  }
+  if (!match || !isValidOrderId(match[1]) || !isValidOrderStatusToken(match[1], match[2])) {
+    return res.status(400).json({ success: false, error: 'This pickup code is invalid.' });
+  }
+
+  try {
+    const { data: userData, error: userError } = await supabase.auth.getUser(accessToken);
+    if (userError || !userData.user) {
+      return res.status(401).json({ success: false, error: 'Your cashier session is invalid or expired.' });
+    }
+
+    const { data: cashier, error: cashierError } = await supabase
+      .from('cashiers')
+      .select('id')
+      .eq('id', userData.user.id)
+      .eq('is_active', true)
+      .maybeSingle();
+    if (cashierError) throw cashierError;
+    if (!cashier) {
+      return res.status(403).json({ success: false, error: 'An active cashier account is required.' });
+    }
+
+    const { data: openShift, error: shiftError } = await supabase
+      .from('cashier_shifts')
+      .select('id')
+      .eq('cashier_id', cashier.id)
+      .eq('status', 'open')
+      .limit(1)
+      .maybeSingle();
+    if (shiftError) throw shiftError;
+    if (!openShift) {
+      return res.status(403).json({ success: false, error: 'Open a cashier shift before verifying pickup orders.' });
+    }
+
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .select('id, status, payment_method, total_amount')
+      .eq('id', match[1])
+      .maybeSingle();
+    if (orderError) throw orderError;
+    if (!order) {
+      return res.status(404).json({ success: false, error: 'Order not found.' });
+    }
+    if (order.status !== 'completed') {
+      return res.status(409).json({ success: false, paid: false, error: 'Payment is not confirmed for this order.' });
+    }
+
+    return res.json({
+      success: true,
+      paid: true,
+      orderId: order.id,
+      totalAmount: Number(order.total_amount),
+      paymentMethod: order.payment_method
+    });
+  } catch (error) {
+    console.error('Pickup verification error:', error.message);
+    return res.status(500).json({ success: false, error: 'Unable to verify this pickup code.' });
   }
 });
 
@@ -528,9 +604,11 @@ app.get('/api/orders/:id/status', async (req, res) => {
       return res.status(403).json({ error: 'You are not authorized to view this order.' });
     }
 
-    if (order.status === 'pending' && order.pesapal_tracking_id) {
+    let pesapalStatus = null;
+    if (order.status !== 'completed' && order.pesapal_tracking_id) {
       try {
-        await syncPesapalOrder(order.pesapal_tracking_id, '');
+        const syncResult = await syncPesapalOrder(order.pesapal_tracking_id, '');
+        pesapalStatus = syncResult.paymentStatus;
         const refreshed = await supabase
           .from('orders')
           .select('id, customer_id, cashier_id, status, payment_method, total_amount, pesapal_tracking_id, payment_transactions(status)')
@@ -539,18 +617,50 @@ app.get('/api/orders/:id/status', async (req, res) => {
         order = refreshed.data || order;
       } catch (err) {
         console.error('Pesapal status polling error:', err.message);
+        return res.status(502).json({
+          error: 'Unable to verify the latest payment status with Pesapal. Retry shortly and do not release the order yet.'
+        });
       }
     }
 
     res.json({
       orderId: order.id,
       status: order.status,
+      pesapalStatus,
       transactionStatus: order.payment_transactions?.[0]?.status || 'pending',
       payment_method: order.payment_method,
       total_amount: order.total_amount
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/orders/:id/pickup-qr', async (req, res) => {
+  const orderId = String(req.params.id || '');
+  const statusToken = String(req.headers['x-order-status-token'] || '');
+  if (!isValidOrderId(orderId) || !isValidOrderStatusToken(orderId, statusToken)) {
+    return res.status(403).json({ success: false, error: 'Order authorization is invalid or expired.' });
+  }
+
+  try {
+    const { data: order, error } = await supabase
+      .from('orders')
+      .select('id, status')
+      .eq('id', orderId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!order) return res.status(404).json({ success: false, error: 'Order not found.' });
+    if (order.status !== 'completed') {
+      return res.status(409).json({ success: false, error: 'A pickup code is available only after payment is confirmed.' });
+    }
+
+    const code = `VENDORA-PICKUP:${order.id}:${statusToken}`;
+    const qrCode = await QRCode.toDataURL(code, { errorCorrectionLevel: 'M', margin: 2, width: 280 });
+    return res.json({ success: true, qrCode, orderId: order.id });
+  } catch (error) {
+    console.error('Pickup QR generation error:', error.message);
+    return res.status(500).json({ success: false, error: 'Unable to generate the pickup code.' });
   }
 });
 

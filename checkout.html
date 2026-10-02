@@ -74,6 +74,16 @@
           </button>
           <p class="checkout-privacy-note">Your payment details are handled securely by Pesapal.</p>
         </form>
+
+        <section id="pickupProof" class="checkout-pickup-proof" aria-labelledby="pickupProofTitle" hidden>
+          <div>
+            <span class="checkout-section-number">03</span>
+            <h2 id="pickupProofTitle">Your pickup QR</h2>
+            <p>Show this code to the cashier. It is issued only after payment is confirmed.</p>
+          </div>
+          <img id="pickupQrImage" class="checkout-pickup-qr" alt="Verified pickup QR code">
+          <strong id="pickupOrderNumber" class="checkout-pickup-order"></strong>
+        </section>
       </section>
 
     </div>

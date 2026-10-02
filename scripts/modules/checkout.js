@@ -15,6 +15,9 @@ const content = document.getElementById('checkoutContent');
 const emptyState = document.getElementById('checkoutEmpty');
 const submitButton = document.getElementById('authorizePaymentBtn');
 const statusMessage = document.getElementById('checkoutStatus');
+const pickupProof = document.getElementById('pickupProof');
+const pickupQrImage = document.getElementById('pickupQrImage');
+const pickupOrderNumber = document.getElementById('pickupOrderNumber');
 
 let cart = readCart();
 renderSummary();
@@ -106,17 +109,37 @@ async function handlePaymentReturn() {
   setStatus('Checking your payment with Pesapal...', 'pending');
   try {
     const orderToken = sessionStorage.getItem(`${ORDER_STATUS_TOKEN_KEY}:${orderId}`);
-    const response = await fetch(`${PAYMENT_API_BASE}/api/orders/${encodeURIComponent(orderId)}/status`, {
-      headers: orderToken ? { 'X-Order-Status-Token': orderToken } : {}
-    });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(result.error || 'Unable to verify payment status.');
+    if (!orderToken) throw new Error('This checkout session cannot authorize the order status check.');
 
-    if (result.status === 'completed') {
+    let result = null;
+    for (let attempt = 0; attempt < 30; attempt += 1) {
+      const response = await fetch(`${PAYMENT_API_BASE}/api/orders/${encodeURIComponent(orderId)}/status`, {
+        headers: { 'X-Order-Status-Token': orderToken }
+      });
+      result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'Unable to verify payment status.');
+      if (result.status === 'completed' || result.status === 'failed') break;
+      setStatus('Your payment is still being confirmed. Keep this page open; your pickup QR will appear after confirmation.', 'pending');
+      await new Promise(resolve => window.setTimeout(resolve, 3000));
+    }
+
+    if (result?.status === 'completed') {
+      const qrResponse = await fetch(`${PAYMENT_API_BASE}/api/orders/${encodeURIComponent(orderId)}/pickup-qr`, {
+        headers: { 'X-Order-Status-Token': orderToken }
+      });
+      const qrResult = await qrResponse.json().catch(() => ({}));
+      if (!qrResponse.ok || !qrResult.success || !qrResult.qrCode) {
+        throw new Error(qrResult.error || 'Payment is confirmed, but the pickup QR could not be generated.');
+      }
+
       localStorage.removeItem(CART_STORAGE_KEY);
       sessionStorage.removeItem(`${ORDER_STATUS_TOKEN_KEY}:${orderId}`);
+      pickupQrImage.src = qrResult.qrCode;
+      pickupQrImage.alt = `Verified pickup QR code for order ${orderId}`;
+      pickupOrderNumber.textContent = `Order #${orderId}`;
+      pickupProof.hidden = false;
       setStatus(`Payment confirmed for order #${orderId}. Thank you for shopping with VENDORA.`, 'success');
-    } else if (result.status === 'failed') {
+    } else if (result?.status === 'failed') {
       setStatus(result.pesapalDescription || result.pesapalMessage || 'Payment was not completed. Your cart is still saved so you can try again.', 'error');
     } else {
       setStatus('Your payment is still being confirmed. You can safely check your order status shortly.', 'pending');
