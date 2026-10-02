@@ -3045,6 +3045,29 @@ body.cashier-body .receipt-detail-row {
   font-size: 0.78rem;
 }
 
+body.cashier-body .receipt-pickup-code {
+  display: grid;
+  justify-items: center;
+  gap: 0.45rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--pos-border);
+  text-align: center;
+}
+
+body.cashier-body .receipt-pickup-code img {
+  width: 180px;
+  height: 180px;
+  padding: 0.35rem;
+  background: #ffffff;
+  image-rendering: pixelated;
+}
+
+body.cashier-body .receipt-pickup-code span {
+  color: var(--pos-muted);
+  font-size: 0.75rem;
+}
+
 body.cashier-body .receipt-actions {
   align-items: center;
   margin-top: 1.25rem;

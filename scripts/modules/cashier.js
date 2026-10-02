@@ -9,6 +9,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   let cart = [];
   let activeShift = null;
   let selectedPaymentMethod = 'Cash';
+  const pendingSaleStorageKey = 'vendora_pending_cashier_sale';
+  let pendingPesapalSale = null;
+  try {
+    const savedPendingSale = JSON.parse(sessionStorage.getItem(pendingSaleStorageKey) || 'null');
+    if (savedPendingSale?.order?.id && Array.isArray(savedPendingSale.saleItems)) {
+      pendingPesapalSale = savedPendingSale;
+    }
+  } catch {
+    sessionStorage.removeItem(pendingSaleStorageKey);
+  }
 
   // DOM Elements
   const loginForm = document.getElementById('cashier-login-form');
@@ -437,9 +447,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="receipt-total-row"><span>Total</span><strong>UGX ${total.toLocaleString()}</strong></div>
       <div class="receipt-detail-row"><span>Payment method</span><span>${escapeReceiptText(paymentMethod)}</span></div>
       ${paymentMethod === 'Cash' ? `<div class="receipt-detail-row"><span>Change</span><span>UGX ${change.toLocaleString()}</span></div>` : ''}
+      ${order?.pickupQr ? `<div class="receipt-pickup-code"><strong>Pickup verification</strong><img src="${escapeReceiptText(order.pickupQr)}" alt="Verified pickup QR for order ${escapeReceiptText(orderNumber)}"><span>Show this code when collecting the order.</span></div>` : ''}
     `;
     receiptModal.classList.remove('hidden');
     receiptModal.setAttribute('aria-hidden', 'false');
+  }
+
+  function cartMatchesSale(saleItems) {
+    return cart.length === saleItems.length && saleItems.every((item, index) =>
+      String(cart[index]?.id) === String(item.id) && Number(cart[index]?.qty) === Number(item.qty)
+    );
   }
 
   function escapeReceiptText(value) {
@@ -612,6 +629,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       ? { Authorization: `Bearer ${sessionData.session.access_token}` }
       : {};
     let verificationError = '';
+    let latestPesapalStatus = '';
 
     for (let attempt = 0; attempt < 60; attempt += 1) {
       await new Promise(resolve => setTimeout(resolve, 3000));
@@ -626,23 +644,86 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         throw new Error(currentOrder.error || `Unable to verify payment (HTTP ${response.status}).`);
       }
+      latestPesapalStatus = currentOrder.pesapalStatus || latestPesapalStatus;
       if (currentOrder.status === 'completed') {
         addSaleNotification(order.id, total, currentOrder.payment_method || 'Pesapal');
         showReceipt(currentOrder, saleItems, total, currentOrder.payment_method || 'Pesapal', 0);
         alert(`Sale #${order.id} completed successfully (Pesapal).`);
-        cart = [];
-        updateCartUI();
-        if (customerPhoneInput) customerPhoneInput.value = '';
+        if (cartMatchesSale(saleItems)) {
+          cart = [];
+          updateCartUI();
+          if (customerPhoneInput) customerPhoneInput.value = '';
+        }
+        pendingPesapalSale = null;
+        sessionStorage.removeItem(pendingSaleStorageKey);
         return;
       }
       if (currentOrder.status === 'failed') {
-        throw new Error(`Pesapal reports this payment as ${currentOrder.pesapalStatus || 'failed'}. If your payment confirmation says otherwise, retry verification before releasing the order.`);
+        const error = new Error(`Pesapal reports this payment as ${currentOrder.pesapalStatus || 'failed'}. Do not release the order until it is verified as completed.`);
+        error.code = 'PESAPAL_PAYMENT_FAILED';
+        throw error;
       }
+    }
+    if (latestPesapalStatus === 'invalid') {
+      throw new Error('Pesapal has not matched this payment to the order yet. Keep the receipt and retry verification; do not release the order until it shows completed.');
     }
     throw new Error(verificationError || 'Timed out waiting for Pesapal payment confirmation.');
   }
 
+  async function submitPesapalPayment(pendingSale) {
+    const phoneNumber = customerPhoneInput?.value.trim();
+    if (!phoneNumber) throw new Error('Enter the customer phone number to retry this order.');
+
+    const checkoutWindow = window.open('', '_blank');
+    const response = await fetch(`${paymentApiBase}/api/payments/pesapal`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phoneNumber, orderId: pendingSale.order.id })
+    });
+    const payment = await response.json().catch(() => ({}));
+    if (!response.ok || !payment.success || !payment.redirectUrl) {
+      checkoutWindow?.close();
+      throw new Error(payment.error || 'Unable to start or resume Pesapal payment.');
+    }
+
+    pendingSale.phase = 'submitted';
+    sessionStorage.setItem(pendingSaleStorageKey, JSON.stringify(pendingSale));
+    if (checkoutWindow) checkoutWindow.location.href = payment.redirectUrl;
+    else window.open(payment.redirectUrl, '_blank');
+  }
+
+  async function resumePendingPesapalSale(pendingSale) {
+    if (pendingSale.phase === 'created') {
+      await submitPesapalPayment(pendingSale);
+    }
+
+    try {
+      await waitForPesapalPayment(pendingSale.order, pendingSale.saleItems, pendingSale.total);
+    } catch (error) {
+      if (error.code !== 'PESAPAL_PAYMENT_FAILED') throw error;
+      await submitPesapalPayment(pendingSale);
+      await waitForPesapalPayment(pendingSale.order, pendingSale.saleItems, pendingSale.total);
+    }
+  }
+
   async function completeSale() {
+  if (pendingPesapalSale) {
+    payNowBtn.disabled = true;
+    payNowBtn.textContent = `Verifying order #${pendingPesapalSale.order.id}...`;
+    try {
+      await resumePendingPesapalSale(pendingPesapalSale);
+    } catch (err) {
+      console.error('Pending Pesapal sale verification error:', err);
+      alert('Order #' + pendingPesapalSale.order.id + ' is still being verified. ' + err.message + ' Do not start another payment for this order.');
+    } finally {
+      payNowBtn.disabled = false;
+      payNowBtn.textContent = pendingPesapalSale
+        ? `Verify pending order #${pendingPesapalSale.order.id}`
+        : 'Complete Sale (Enter)';
+    }
+    return;
+  }
+
   if (cart.length === 0) {
     alert("Cart is empty!");
     return;
@@ -702,27 +783,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (itemsErr) throw itemsErr;
 
     if (!isCashSale) {
-      const checkoutWindow = window.open('', '_blank');
-      const response = await fetch(`${paymentApiBase}/api/payments/pesapal`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: grandTotal,
-          phoneNumber: customerPhoneInput.value.trim(),
-          orderId: order.id
-        })
-      });
-      const payment = await response.json();
-      if (!response.ok || !payment.success || !payment.redirectUrl) {
-        checkoutWindow?.close();
-        throw new Error(payment.error || 'Unable to start Pesapal payment.');
-      }
-      if (checkoutWindow) {
-        checkoutWindow.location.href = payment.redirectUrl;
-      } else {
-        window.open(payment.redirectUrl, '_blank');
-      }
-      await waitForPesapalPayment(order, saleItems, grandTotal);
+      pendingPesapalSale = { order, saleItems, total: grandTotal, phase: 'created' };
+      sessionStorage.setItem(pendingSaleStorageKey, JSON.stringify(pendingPesapalSale));
+      await resumePendingPesapalSale(pendingPesapalSale);
       return;
     }
 

@@ -107,11 +107,12 @@ async function handlePaymentReturn() {
   if (!orderId || !params.get('status')) return;
 
   setStatus('Checking your payment with Pesapal...', 'pending');
+  let result = null;
+  let clearPaymentQuery = false;
   try {
     const orderToken = sessionStorage.getItem(`${ORDER_STATUS_TOKEN_KEY}:${orderId}`);
     if (!orderToken) throw new Error('This checkout session cannot authorize the order status check.');
 
-    let result = null;
     for (let attempt = 0; attempt < 30; attempt += 1) {
       const response = await fetch(`${PAYMENT_API_BASE}/api/orders/${encodeURIComponent(orderId)}/status`, {
         headers: { 'X-Order-Status-Token': orderToken }
@@ -139,8 +140,12 @@ async function handlePaymentReturn() {
       pickupOrderNumber.textContent = `Order #${orderId}`;
       pickupProof.hidden = false;
       setStatus(`Payment confirmed for order #${orderId}. Thank you for shopping with VENDORA.`, 'success');
+      clearPaymentQuery = true;
     } else if (result?.status === 'failed') {
       setStatus(result.pesapalDescription || result.pesapalMessage || 'Payment was not completed. Your cart is still saved so you can try again.', 'error');
+      clearPaymentQuery = true;
+    } else if (result?.pesapalStatus === 'invalid') {
+      setStatus('Pesapal has not matched this payment to the order yet. Keep this page open and retry later. The pickup QR will appear only after Pesapal confirms payment.', 'pending');
     } else {
       setStatus('Your payment is still being confirmed. You can safely check your order status shortly.', 'pending');
     }
@@ -148,7 +153,7 @@ async function handlePaymentReturn() {
     console.error('Payment return verification error:', error);
     setStatus('We could not verify the payment yet. Your cart has been kept safe.', 'error');
   } finally {
-    window.history.replaceState({}, document.title, window.location.pathname);
+    if (clearPaymentQuery) window.history.replaceState({}, document.title, window.location.pathname);
   }
 }
 

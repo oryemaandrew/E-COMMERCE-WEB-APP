@@ -77,6 +77,12 @@ function isValidOrderStatusToken(orderId, token) {
   return supplied.length === expected.length && timingSafeEqual(supplied, expected);
 }
 
+function createPickupQr(orderId) {
+  const statusToken = createOrderStatusToken(orderId);
+  const code = `VENDORA-PICKUP:${orderId}:${statusToken}`;
+  return QRCode.toDataURL(code, { errorCorrectionLevel: 'M', margin: 2, width: 280 });
+}
+
 app.post('/api/checkout', async (req, res) => {
   const body = req.body || {};
   const items = body.items;
@@ -386,8 +392,7 @@ async function syncPesapalOrder(orderTrackingId, merchantReference) {
   const statusByProvider = {
     completed: 'completed',
     failed: 'failed',
-    reversed: 'failed',
-    invalid: 'failed'
+    reversed: 'failed'
   };
   const dbStatus = statusByProvider[paymentStatus];
 
@@ -411,6 +416,13 @@ async function syncPesapalOrder(orderTrackingId, merchantReference) {
         updated_at: new Date().toISOString()
       })
       .eq('id', orderId);
+    if (error) throw error;
+  } else if (orderId && paymentStatus === 'invalid') {
+    const { error } = await supabase
+      .from('orders')
+      .update({ status: 'pending', updated_at: new Date().toISOString() })
+      .eq('id', orderId)
+      .neq('status', 'completed');
     if (error) throw error;
   }
 
@@ -458,7 +470,7 @@ app.post('/api/payments/pesapal', async (req, res) => {
   try {
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select('id, total_amount, status')
+      .select('id, total_amount, status, pesapal_tracking_id, pesapal_redirect_url, pesapal_merchant_reference')
       .eq('id', orderId)
       .single();
 
@@ -468,6 +480,20 @@ app.post('/api/payments/pesapal', async (req, res) => {
 
     if (source === 'storefront' && !isValidOrderStatusToken(order.id, orderToken)) {
       return res.status(403).json({ success: false, error: 'Checkout authorization is invalid or expired.' });
+    }
+    if (order.status === 'completed') {
+      return res.status(409).json({ success: false, error: 'This order is already paid.' });
+    }
+    if (order.status === 'pending' && order.pesapal_tracking_id) {
+      if (!order.pesapal_redirect_url) {
+        return res.status(409).json({ success: false, error: 'Payment is already being processed for this order. Verify its status before retrying.' });
+      }
+      return res.json({
+        success: true,
+        orderTrackingId: order.pesapal_tracking_id,
+        redirectUrl: order.pesapal_redirect_url,
+        reused: true
+      });
     }
 
     const amountToCharge = Number(order.total_amount);
@@ -510,13 +536,16 @@ app.post('/api/payments/pesapal', async (req, res) => {
     }
 
     // Update local order record with Pesapal Order Tracking ID
-    await supabase
+    const { error: updateError } = await supabase
       .from('orders')
       .update({ 
         pesapal_tracking_id: result.order_tracking_id,
+        pesapal_merchant_reference: orderPayload.id,
+        pesapal_redirect_url: result.redirect_url,
         status: 'pending'
       })
       .eq('id', orderId);
+    if (updateError) throw updateError;
 
     res.json({
       success: true,
@@ -623,13 +652,18 @@ app.get('/api/orders/:id/status', async (req, res) => {
       }
     }
 
+    const pickupQr = authenticatedUser?.id === order.cashier_id && order.status === 'completed'
+      ? await createPickupQr(order.id)
+      : null;
+
     res.json({
       orderId: order.id,
       status: order.status,
       pesapalStatus,
       transactionStatus: order.payment_transactions?.[0]?.status || 'pending',
       payment_method: order.payment_method,
-      total_amount: order.total_amount
+      total_amount: order.total_amount,
+      pickupQr
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -655,8 +689,7 @@ app.get('/api/orders/:id/pickup-qr', async (req, res) => {
       return res.status(409).json({ success: false, error: 'A pickup code is available only after payment is confirmed.' });
     }
 
-    const code = `VENDORA-PICKUP:${order.id}:${statusToken}`;
-    const qrCode = await QRCode.toDataURL(code, { errorCorrectionLevel: 'M', margin: 2, width: 280 });
+    const qrCode = await createPickupQr(order.id);
     return res.json({ success: true, qrCode, orderId: order.id });
   } catch (error) {
     console.error('Pickup QR generation error:', error.message);
